@@ -2,42 +2,63 @@ import numpy as np
 import scipy.stats
 import random
 import math
-
-MIN_SPEED = 0.9
-MAX_SPEED = 1.4
+import constants as cst
+from Model.rectangle import Rectangle
 
 
 class Crowd:
-    lambda0 = 0.1
+    lambda0 = 0.5
 
     # Constructor
     def __init__(self, rectangle):
         self.rectangle = rectangle
         self.points_list = None
         self.speed_list = None
+        self.rect_list = []
         self.nb_points = 0
 
     # Class Functions
-    def poissonPointProcess(self):
-        self.nb_points = scipy.stats.poisson(self.lambda0 * self.rectangle.getArea()).rvs()
-        x = self.rectangle.width * scipy.stats.uniform.rvs(0, 1, (self.nb_points, 1))
-        y = self.rectangle.height * scipy.stats.uniform.rvs(0, 1, (self.nb_points, 1))
+    def poissonPointProcess(self, rectangle):
+        nb_points = scipy.stats.poisson(self.lambda0 * rectangle.getArea()).rvs()
+        x = rectangle.width * scipy.stats.uniform.rvs(0, 1, (nb_points, 1)) + rectangle.pos[0]
+        y = rectangle.height * scipy.stats.uniform.rvs(0, 1, (nb_points, 1)) + rectangle.pos[1]
 
-        self.points_list = np.concatenate((x, y), axis=1)
+        return np.concatenate((x, y), axis=1)
 
     def randomSpeed(self):
         self.speed_list = np.empty((self.nb_points, 2))
         for i in range(self.nb_points):
             phi = random.uniform(0, 2 * math.pi)
-            speed = random.uniform(MIN_SPEED, MAX_SPEED)
+            speed = random.uniform(cst.MIN_SPEED, cst.MAX_SPEED)
             vx = speed * math.cos(phi)
             vy = speed * math.sin(phi)
             self.speed_list[i][0] = vx
             self.speed_list[i][1] = vy
 
-    def initPoints(self):
-        self.poissonPointProcess()
+    def initPoints(self, clusters_check):
+        self.rect_list = []
+        if not clusters_check:
+            self.rect_list.append(self.rectangle)
+            self.points_list = self.poissonPointProcess(self.rectangle)
+        else:
+            self.divideRectangle(self.rectangle)
+            temp_list = []
+            for i in range(len(self.rect_list)):
+                temp_list.append(self.poissonPointProcess(self.rect_list[i]))
+            self.points_list = np.vstack(temp_list)
+
+        self.nb_points = len(self.points_list)
         self.randomSpeed()
+
+    def divideRectangle(self, rectangle):
+        rectWidth = rectangle.getWidth()
+        rectHeight = rectangle.getHeight()
+        w = random.uniform(0.2 * rectWidth, 0.8 * rectWidth)
+        h = random.uniform(0.2 * rectHeight, 0.8 * rectHeight)
+        self.rect_list.append(Rectangle(w, h, [0, 0]))
+        self.rect_list.append(Rectangle(w, rectHeight - h, [0, h]))
+        self.rect_list.append(Rectangle(rectWidth - w, h, [w, 0]))
+        self.rect_list.append(Rectangle(rectWidth - w, rectHeight - h, [w, h]))
 
     def updatePosition(self, delta_time):
         for i in range(self.nb_points):

@@ -1,12 +1,11 @@
 
 class Rectangle:
-    MIN_RECTANGLE = 10
-    MAX_RECTANGLE = 40
 
     # Constructor
-    def __init__(self, width, height):
+    def __init__(self, width, height, pos):
         self.width = width
         self.height = height
+        self.pos = pos
 
     # Set Functions
     def setWidth(self, width):

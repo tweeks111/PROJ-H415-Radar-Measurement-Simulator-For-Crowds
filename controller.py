@@ -1,5 +1,6 @@
 from View.view import View
 from Model.model import Model
+import constants as cst
 import time
 
 
@@ -20,9 +21,9 @@ class Controller:
     # View Configuration
     def configLeftPanel(self):
         # Sliders
-        self.view.left_side_panel.height_slider.configure(command=self.changeRectangleHeight, from_=self.model.rectangle.MIN_RECTANGLE, to=self.model.rectangle.MAX_RECTANGLE)
+        self.view.left_side_panel.height_slider.configure(command=self.changeRectangleHeight, from_=cst.MIN_RECTANGLE, to=cst.MAX_RECTANGLE)
         self.view.left_side_panel.height_slider.set(self.model.getRectangleHeight())
-        self.view.left_side_panel.width_slider.configure(command=self.changeRectangleWidth, from_=self.model.rectangle.MIN_RECTANGLE, to=self.model.rectangle.MAX_RECTANGLE)
+        self.view.left_side_panel.width_slider.configure(command=self.changeRectangleWidth, from_=cst.MIN_RECTANGLE, to=cst.MAX_RECTANGLE)
         self.view.left_side_panel.width_slider.set(self.model.getRectangleWidth())
         self.view.left_side_panel.lambda_slider.configure(command=self.changeLambda, from_=0.1, to=1.0, resolution=0.1)
         self.view.left_side_panel.lambda_slider.set(self.model.getLambda())
@@ -31,7 +32,7 @@ class Controller:
         self.view.left_side_panel.start_btn.configure(command=self.startSimulation)
 
     def initUI(self):
-        self.view.canvas.computePixelRatio(self.model.rectangle.MAX_RECTANGLE)
+        self.view.canvas.computePixelRatio(cst.MAX_RECTANGLE)
         self.view.canvas.updateRectangleDimension(self.model.getRectangleWidth(), self.model.getRectangleHeight())
 
     # MVC Interaction
@@ -50,11 +51,12 @@ class Controller:
 
     def startSimulation(self):
         self.is_running = True
-        self.view.left_side_panel.blockSliders(self.is_running)
-        self.view.left_side_panel.start_btn.configure(command=self.stopSimulation)
 
-        self.model.initCrowd()
+        self.model.initCrowd(self.view.left_side_panel.getClustersCheck())
         self.view.canvas.initPoints(self.model.getPointsList())
+
+        self.view.left_side_panel.blockSliders(self.is_running, self.model.getNumberPoints())
+        self.view.left_side_panel.start_btn.configure(command=self.stopSimulation)
 
         delta_time = 0
         while self.is_running:

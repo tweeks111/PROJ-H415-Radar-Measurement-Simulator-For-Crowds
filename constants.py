@@ -1,4 +1,14 @@
-# Constants
+"""Constants"""
+
+# Canvas
 CANVAS_WIDTH = 600
 CANVAS_HEIGHT = 580
 PERSON_DIAMETER = 0.8
+
+# Person Speed
+MIN_SPEED = 0
+MAX_SPEED = 1.4
+
+# Rectangle Dimension
+MIN_RECTANGLE = 10
+MAX_RECTANGLE = 40

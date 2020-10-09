@@ -1,19 +1,21 @@
 from Model.rectangle import Rectangle
 from Model.crowd import Crowd
+import constants as cst
 import time
 
-class Model:
 
+class Model:
     # Constructor
     def __init__(self):
-        self.rectangle = Rectangle((Rectangle.MAX_RECTANGLE - Rectangle.MIN_RECTANGLE) / 2 + Rectangle.MIN_RECTANGLE,
-                                   (Rectangle.MAX_RECTANGLE - Rectangle.MIN_RECTANGLE) / 2 + Rectangle.MIN_RECTANGLE)
+        self.rectangle = Rectangle((cst.MAX_RECTANGLE - cst.MIN_RECTANGLE) / 2 + cst.MIN_RECTANGLE,
+                                   (cst.MAX_RECTANGLE - cst.MIN_RECTANGLE) / 2 + cst.MIN_RECTANGLE,
+                                   [0, 0])
 
         self.crowd = Crowd(self.rectangle)
 
     # Class Functions
-    def initCrowd(self):
-        self.crowd.initPoints()
+    def initCrowd(self, clusters_check):
+        self.crowd.initPoints(clusters_check)
 
     def run(self, delta_time):
         self.crowd.updatePosition(delta_time)
@@ -47,6 +49,9 @@ class Model:
 
     def getPointsList(self):
         return self.crowd.getPointsList()
+
+    def getNumberPoints(self):
+        return self.crowd.getNbPoints()
 
     def getSpeedList(self):
         return self.crowd.getSpeedList()
