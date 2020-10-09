@@ -1,6 +1,7 @@
-from view import View
+from View.view import View
 from Model.model import Model
 import time
+
 
 class Controller:
     # Constructor
