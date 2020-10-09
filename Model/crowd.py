@@ -59,8 +59,6 @@ class Crowd:
             # New Position Computation
             self.points_list[i] = [new_x, new_y]
 
-
-
     # Set Functions
     def setLambda(self, lambda0):
         self.lambda0 = lambda0

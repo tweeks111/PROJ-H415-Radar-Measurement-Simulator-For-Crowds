@@ -1,9 +1,9 @@
 import tkinter as tk
-
+from tkinter import messagebox
 # Constants
 CANVAS_WIDTH = 600
 CANVAS_HEIGHT = 580
-PERSON_DIAMETER = 0.5
+PERSON_DIAMETER = 0.8
 
 
 class View(tk.Tk):
@@ -16,6 +16,11 @@ class View(tk.Tk):
         self.resizable(False, False)
         self.left_side_panel = LeftPanel(self)
         self.canvas = Canvas(self)
+        self.protocol("WM_DELETE_WINDOW", self.on_close)
+
+    def on_close(self):
+        if messagebox.askokcancel("Quit", "Do you want to quit ?"):
+            self.destroy()
 
 
 class LeftPanel(tk.Frame):
@@ -93,13 +98,26 @@ class Canvas(tk.Canvas):
 
         self.update()
 
-    def drawPoints(self, points_list):
-        self.delete("points")
-        self.points.clear()
+    def initPoints(self, points_list):
         for i in range(len(points_list)):
             x = self.padx + points_list[i][0]*self.PIXEL_PER_METER
             y = self.pady + points_list[i][1]*self.PIXEL_PER_METER
-            self.points.append(self.create_oval(x - PERSON_DIAMETER * self.PIXEL_PER_METER / 2, y - PERSON_DIAMETER * self.PIXEL_PER_METER / 2, x + PERSON_DIAMETER * self.PIXEL_PER_METER / 2, y + PERSON_DIAMETER * self.PIXEL_PER_METER / 2, fill="red", tag="points"))
+            self.points.append(self.create_oval(x - PERSON_DIAMETER * self.PIXEL_PER_METER / 2,
+                                                y - PERSON_DIAMETER * self.PIXEL_PER_METER / 2,
+                                                x + PERSON_DIAMETER * self.PIXEL_PER_METER / 2,
+                                                y + PERSON_DIAMETER * self.PIXEL_PER_METER / 2,
+                                                fill="red", tag="points"))
+
+        self.update()
+
+    def movePoints(self, points_list):
+        for i in range(len(points_list)):
+            x = self.padx + points_list[i][0]*self.PIXEL_PER_METER
+            y = self.pady + points_list[i][1]*self.PIXEL_PER_METER
+            self.coords(self.points[i], x - PERSON_DIAMETER * self.PIXEL_PER_METER / 2,
+                                        y - PERSON_DIAMETER * self.PIXEL_PER_METER / 2,
+                                        x + PERSON_DIAMETER * self.PIXEL_PER_METER / 2,
+                                        y + PERSON_DIAMETER * self.PIXEL_PER_METER / 2)
 
         self.update()
 

@@ -53,13 +53,14 @@ class Controller:
         self.view.left_side_panel.start_btn.configure(command=self.stopSimulation)
 
         self.model.initCrowd()
+        self.view.canvas.initPoints(self.model.getPointsList())
 
         delta_time = 0
         while self.is_running:
             start_time = time.time()
             self.model.run(delta_time)
             points_list = self.model.getPointsList()
-            self.view.canvas.drawPoints(points_list)
+            self.view.canvas.movePoints(points_list)
             delta_time = time.time()-start_time
 
     def stopSimulation(self):
