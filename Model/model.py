@@ -50,6 +50,9 @@ class Model:
     def getPointsList(self):
         return self.crowd.getPointsList()
 
+    def getRectList(self):
+        return self.crowd.getRectList()
+
     def getNumberPoints(self):
         return self.crowd.getNbPoints()
 

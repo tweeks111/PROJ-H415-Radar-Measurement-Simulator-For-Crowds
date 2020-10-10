@@ -21,6 +21,7 @@ class Canvas(tk.Canvas):
         self.width_label = self.create_text(0, 0)
         self.height_label = self.create_text(0, 0)
         self.points = []
+        self.clusters_list = []
 
     # Update Functions
     def updateRectangleDimension(self, width, height):
@@ -73,3 +74,19 @@ class Canvas(tk.Canvas):
     def computePixelRatio(self, max_rect_size):
         min_canvas_size = min(cst.CANVAS_WIDTH-100, cst.CANVAS_HEIGHT-100)
         self.PIXEL_PER_METER = min_canvas_size / max_rect_size
+
+    def drawClusters(self, rect_list):
+        for rect in rect_list:
+            pos = rect.getPos()
+            w = rect.getWidth()
+            h = rect.getHeight()
+            self.clusters_list.append(self.create_rectangle(self.padx + (pos[0]) * self.PIXEL_PER_METER,
+                                      self.pady + (pos[1]) * self.PIXEL_PER_METER,
+                                      self.padx + (pos[0] + w) * self.PIXEL_PER_METER,
+                                      self.pady + (pos[1] + h) * self.PIXEL_PER_METER, tag="clusters", outline="#d4d5d6"))
+
+        self.update()
+
+    def eraseClusters(self):
+        self.clusters_list.clear()
+        self.delete("clusters")

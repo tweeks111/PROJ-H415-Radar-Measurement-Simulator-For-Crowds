@@ -53,6 +53,7 @@ class Controller:
         self.is_running = True
 
         self.model.initCrowd(self.view.left_side_panel.getClustersCheck())
+        self.view.canvas.drawClusters(self.model.getRectList())
         self.view.canvas.initPoints(self.model.getPointsList())
 
         self.view.left_side_panel.blockSliders(self.is_running, self.model.getNumberPoints())
@@ -71,3 +72,4 @@ class Controller:
         self.view.left_side_panel.blockSliders(self.is_running)
         self.view.left_side_panel.start_btn.configure(command=self.startSimulation)
         self.view.canvas.erasePoints()
+        self.view.canvas.eraseClusters()

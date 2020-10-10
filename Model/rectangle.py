@@ -27,3 +27,6 @@ class Rectangle:
 
     def getHeight(self):
         return self.height
+
+    def getPos(self):
+        return self.pos
