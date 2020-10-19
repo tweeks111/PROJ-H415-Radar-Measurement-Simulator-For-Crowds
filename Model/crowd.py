@@ -29,6 +29,7 @@ def divideRectangle(rectangle):
     temp_rect_list.append(Rectangle(rectWidth - w, rectHeight - h, [rx + w, ry + h]))
     return temp_rect_list
 
+
 # Class
 
 
@@ -38,31 +39,45 @@ class Crowd:
     # Constructor
     def __init__(self, rectangle):
         self.rectangle = rectangle
+
+        self.rect_list = []
         self.points_list = None
         self.speed_list = None
-        self.rect_list = []
+        self.clusters_list = None
+
         self.nb_points = 0
+        self.avr_nb_points = 0
         self.division = 2
+        self.nb_clusters = 2
 
     # Class Functions
 
-    def randomSpeed(self):
-        self.speed_list = np.empty((self.nb_points, 2))
-        for i in range(self.nb_points):
-            phi = random.uniform(0, 2 * math.pi)
-            speed = random.uniform(cst.MIN_SPEED, cst.MAX_SPEED)
-            vx = speed * math.cos(phi)
-            vy = speed * math.sin(phi)
+    def randomCircle(self):
+        print("ok")
+
+    def computeLambda(self):
+        self.lambda0 = self.avr_nb_points / self.rectangle.getArea()
+
+    def randomSpeed(self, nb_points):
+        self.speed_list = np.empty((nb_points, 2))
+        phi = random.uniform(0, 2 * math.pi)
+        speed = random.uniform(cst.MIN_SPEED, cst.MAX_SPEED)
+        vx = speed * math.cos(phi)
+        vy = speed * math.sin(phi)
+        for i in range(nb_points):
             self.speed_list[i][0] = vx
             self.speed_list[i][1] = vy
 
     def initPoints(self, clusters_check):
+        self.computeLambda()
+        print(self.lambda0)
+
         if not clusters_check:
             self.rect_list.append(self.rectangle)
             self.points_list = poissonPointProcess(self.rectangle, self.lambda0)
         else:
             self.rect_list = divideRectangle(self.rectangle)
-            for i in range(self.division-1):
+            for i in range(self.nb_clusters):
                 temp_rectangle_list = []
                 for rect in self.rect_list:
                     temp_rectangle_list.extend(divideRectangle(rect))
@@ -76,7 +91,7 @@ class Crowd:
             self.points_list = np.vstack(temp_list)
 
         self.nb_points = len(self.points_list)
-        self.randomSpeed()
+        self.randomSpeed(self.nb_points)
 
     def updatePosition(self, delta_time):
         for i in range(self.nb_points):
@@ -101,6 +116,9 @@ class Crowd:
     # Set Functions
     def setLambda(self, lambda0):
         self.lambda0 = lambda0
+
+    def setNbPoints(self, nb_points):
+        self.avr_nb_points = nb_points
 
     # Get Functions
     def getPointsList(self):

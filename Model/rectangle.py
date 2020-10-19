@@ -2,10 +2,9 @@
 class Rectangle:
 
     # Constructor
-    def __init__(self, width, height, pos):
+    def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.pos = pos
 
     # Set Functions
     def setWidth(self, width):
@@ -27,6 +26,3 @@ class Rectangle:
 
     def getHeight(self):
         return self.height
-
-    def getPos(self):
-        return self.pos

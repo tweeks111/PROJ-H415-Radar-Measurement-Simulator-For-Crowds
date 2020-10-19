@@ -1,75 +1,61 @@
-from View.view import View
-from Model.model import Model
-import constants as cst
-import time
+from View import View
+from Model import Model
 
 
 class Controller:
     # Constructor
     def __init__(self):
+        self.map_dim = [0, 0]
+
         self.view = View()
         self.model = Model()
-        self.configLeftPanel()
-        self.initUI()
+        self.configureSizeDialog()
+        self.configureEditorWindow()
 
-        self.is_running = False
-
-    def run(self):
-        self.view.title("Crowd Simulation")
         self.view.mainloop()
 
-    # View Configuration
-    def configLeftPanel(self):
-        # Sliders
-        self.view.left_side_panel.height_slider.configure(command=self.changeRectangleHeight, from_=cst.MIN_RECTANGLE, to=cst.MAX_RECTANGLE)
-        self.view.left_side_panel.height_slider.set(self.model.getRectangleHeight())
-        self.view.left_side_panel.width_slider.configure(command=self.changeRectangleWidth, from_=cst.MIN_RECTANGLE, to=cst.MAX_RECTANGLE)
-        self.view.left_side_panel.width_slider.set(self.model.getRectangleWidth())
-        self.view.left_side_panel.lambda_slider.configure(command=self.changeLambda, from_=0.1, to=1.0, resolution=0.1)
-        self.view.left_side_panel.lambda_slider.set(self.model.getLambda())
+    # Controller Functions
+    def addCluster(self):
+        [r, x, y, v, theta] = self.view.editor_window.left_panel.getClustersSettings()
+        self.view.addCluster(r, x, y, v, theta)
+        self.model.addCluster(r, x, y, v, theta)
 
-        # Button
-        self.view.left_side_panel.start_btn.configure(command=self.startSimulation)
+    def removeCluster(self):
+        index = self.view.editor_window.left_panel.clusters_listbox.curselection()[0]
+        self.view.removeCluster(index)
+        self.model.removeCluster(index)
+        self.selectCluster(None)
 
-    def initUI(self):
-        self.view.canvas.computePixelRatio(cst.MAX_RECTANGLE)
-        self.view.canvas.updateRectangleDimension(self.model.getRectangleWidth(), self.model.getRectangleHeight())
+    def selectCluster(self, event):
+        if self.view.editor_window.left_panel.clusters_listbox.size() > 0:
+            index = self.view.editor_window.left_panel.clusters_listbox.curselection()[0]
+            self.view.selectCluster(index)
 
-    # MVC Interaction
-    def changeRectangleHeight(self, height):
-        rectangleWidth = self.model.getRectangleWidth()
-        self.model.setRectangleHeight(int(height))
-        self.view.canvas.updateRectangleDimension(rectangleWidth, int(height))
+    # Configuration
+    def configureSizeDialog(self):
+        self.view.size_dialog.ok_button.configure(command=self.initMapSize)
 
-    def changeRectangleWidth(self, width):
-        rectangleHeight = self.model.getRectangleHeight()
-        self.model.setRectangleWidth(int(width))
-        self.view.canvas.updateRectangleDimension(int(width), rectangleHeight)
+    def configureEditorWindow(self):
+        self.view.editor_window.left_panel.add_cluster_btn.configure(command=self.addCluster)
+        self.view.editor_window.left_panel.remove_cluster_btn.configure(command=self.removeCluster)
+        self.view.editor_window.left_panel.clusters_listbox.bind('<<ListboxSelect>>', self.selectCluster)
+        self.view.editor_window.left_panel.radius_scale.configure(command=self.updateRadius)
+        self.view.editor_window.left_panel.x_scale.configure(command=self.updateClusterSettings)
+        self.view.editor_window.left_panel.y_scale.configure(command=self.updateClusterSettings)
+        self.view.editor_window.left_panel.v_scale.configure(command=self.updateClusterSettings)
+        self.view.editor_window.left_panel.angle_scale.configure(command=self.updateClusterSettings)
 
-    def changeLambda(self, lambda0):
-        self.model.setLambda(float(lambda0))
+    def initMapSize(self):
+        self.map_dim = self.view.size_dialog.getValues()
+        self.view.setMapDim(self.map_dim)
 
-    def startSimulation(self):
-        self.is_running = True
+    def updateClusterSettings(self, var):
+        if self.view.editor_window.left_panel.clusters_listbox.size() > 0:
+            index = self.view.editor_window.left_panel.clusters_listbox.curselection()[0]
+            [r, x, y, v, theta] = self.view.editor_window.left_panel.getClustersSettings()
+            self.view.updateClusterSettings(r, x, y, v, theta, index)
+            self.model.updateClusterSettings(r, x, y, v, theta, index)
 
-        self.model.initCrowd(self.view.left_side_panel.getClustersCheck())
-        self.view.canvas.drawClusters(self.model.getRectList())
-        self.view.canvas.initPoints(self.model.getPointsList())
-
-        self.view.left_side_panel.blockSliders(self.is_running, self.model.getNumberPoints())
-        self.view.left_side_panel.start_btn.configure(command=self.stopSimulation)
-
-        delta_time = 0
-        while self.is_running:
-            start_time = time.time()
-            self.model.run(delta_time)
-            points_list = self.model.getPointsList()
-            self.view.canvas.movePoints(points_list)
-            delta_time = time.time()-start_time
-
-    def stopSimulation(self):
-        self.is_running = False
-        self.view.left_side_panel.blockSliders(self.is_running)
-        self.view.left_side_panel.start_btn.configure(command=self.startSimulation)
-        self.view.canvas.erasePoints()
-        self.view.canvas.eraseClusters()
+    def updateRadius(self, r):
+        self.view.updateRadius(r)
+        self.updateClusterSettings(None)
