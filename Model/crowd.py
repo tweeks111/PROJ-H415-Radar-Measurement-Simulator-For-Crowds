@@ -6,33 +6,6 @@ import constants as cst
 from Model.rectangle import Rectangle
 
 
-# Static Functions
-
-def poissonPointProcess(rectangle, lambda0):
-    nb_points = scipy.stats.poisson(lambda0 * rectangle.getArea()).rvs()
-    x = rectangle.width * scipy.stats.uniform.rvs(0, 1, (nb_points, 1)) + rectangle.pos[0]
-    y = rectangle.height * scipy.stats.uniform.rvs(0, 1, (nb_points, 1)) + rectangle.pos[1]
-
-    return np.concatenate((x, y), axis=1)
-
-
-def divideRectangle(rectangle):
-    temp_rect_list = []
-    rectWidth = rectangle.getWidth()
-    rectHeight = rectangle.getHeight()
-    [rx, ry] = rectangle.getPos()
-    w = random.uniform(0.2 * rectWidth, 0.8 * rectWidth)
-    h = random.uniform(0.2 * rectHeight, 0.8 * rectHeight)
-    temp_rect_list.append(Rectangle(w, h, [rx, ry]))
-    temp_rect_list.append(Rectangle(w, rectHeight - h, [rx, ry + h]))
-    temp_rect_list.append(Rectangle(rectWidth - w, h, [rx + w, ry]))
-    temp_rect_list.append(Rectangle(rectWidth - w, rectHeight - h, [rx + w, ry + h]))
-    return temp_rect_list
-
-
-# Class
-
-
 class Crowd:
     lambda0 = 0.5
 

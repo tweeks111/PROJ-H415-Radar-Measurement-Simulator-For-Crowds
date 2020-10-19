@@ -1,5 +1,6 @@
 from View import View
 from Model import Model
+import time
 
 
 class Controller:
@@ -11,6 +12,9 @@ class Controller:
         self.model = Model()
         self.configureSizeDialog()
         self.configureEditorWindow()
+
+        self.view.simulation_window.protocol("WM_DELETE_WINDOW", self.closeSimulation)
+        self.is_running = False
 
         self.view.mainloop()
 
@@ -44,10 +48,12 @@ class Controller:
         self.view.editor_window.left_panel.y_scale.configure(command=self.updateClusterSettings)
         self.view.editor_window.left_panel.v_scale.configure(command=self.updateClusterSettings)
         self.view.editor_window.left_panel.angle_scale.configure(command=self.updateClusterSettings)
+        self.view.editor_window.left_panel.run_btn.configure(command=self.runSimulation)
 
     def initMapSize(self):
         self.map_dim = self.view.size_dialog.getValues()
         self.view.setMapDim(self.map_dim)
+        self.model.setMapDim(self.map_dim)
 
     def updateClusterSettings(self, var):
         if self.view.editor_window.left_panel.clusters_listbox.size() > 0:
@@ -59,3 +65,23 @@ class Controller:
     def updateRadius(self, r):
         self.view.updateRadius(r)
         self.updateClusterSettings(None)
+
+    def runSimulation(self):
+        if self.view.editor_window.left_panel.clusters_listbox.size() > 0:
+            self.model.initSimulation()
+            pos_list = self.model.getPointsPosition()
+            self.view.initSimulation(pos_list)
+            start_time = 0
+            delta_time = 0
+            pos_list = []
+            self.is_running = True
+            while self.is_running:
+                start_time = time.time()
+                pos_list = self.model.updatePointsPosition(delta_time)
+                self.view.updateSimulation(pos_list)
+                delta_time = time.time()-start_time
+
+    def closeSimulation(self):
+        self.is_running = False
+        self.view.simulation_window.withdraw()
+        self.view.simulation_window.canvas.delete('all')

@@ -53,8 +53,8 @@ class LeftPanel(tk.Frame):
         self.angle_scale = tk.Scale(self.clusters_config, from_=0, to=360, resolution=15, orient=tk.HORIZONTAL)
         self.angle_scale.grid(row=4, column=1)
 
-        run_btn = tk.Button(self, text="Run Simulation")
-        run_btn.pack()
+        self.run_btn = tk.Button(self, text="Run Simulation")
+        self.run_btn.pack()
 
     def updateRadius(self, r):
         self.x_scale.configure(from_=float(r), to=self.map_dim[0]-float(r))
@@ -88,3 +88,5 @@ class LeftPanel(tk.Frame):
 
     def getClustersSettings(self):
         return [self.radius_scale.get(), self.x_scale.get(), self.y_scale.get(), self.v_scale.get(), self.angle_scale.get()]
+
+# TODO: Make the sliders update when clicking on another cluster
