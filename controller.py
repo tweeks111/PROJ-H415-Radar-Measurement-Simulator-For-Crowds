@@ -37,6 +37,7 @@ class Controller:
 
     def removeCluster(self):
         index = self.view.editor_window.left_panel.clusters_listbox.curselection()[0]
+        self.colors.append(self.view.editor_window.canvas.clusters_colors[index])
         self.view.removeCluster(index)
         self.model.removeCluster(index)
         self.selectCluster(None)

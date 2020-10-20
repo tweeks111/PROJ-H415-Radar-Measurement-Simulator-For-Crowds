@@ -10,8 +10,8 @@ MIN_SPEED = 0
 MAX_SPEED = 10
 
 # Cluster Radius
-MIN_RADIUS = 0.5
-MAX_RADIUS = 2
+MIN_RADIUS = 1
+MAX_RADIUS = 3
 
 # Map Dimension
 MIN_RECTANGLE = 10
