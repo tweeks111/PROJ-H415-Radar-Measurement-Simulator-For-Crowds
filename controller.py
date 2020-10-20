@@ -1,6 +1,7 @@
 from View import View
 from Model import Model
 import time
+from constants import *
 
 
 class Controller:
@@ -20,7 +21,10 @@ class Controller:
 
     # Controller Functions
     def addCluster(self):
-        [r, x, y, v, theta] = self.view.editor_window.left_panel.getClustersSettings()
+        if self.view.editor_window.left_panel.clusters_listbox.size() == 0:
+            [r, x, y, v, theta] = self.view.editor_window.left_panel.getClustersSettings()
+        else:
+            [r, x, y, v, theta] = [(MAX_RADIUS-MIN_RADIUS)/2, self.map_dim[0]/2, self.map_dim[1]/2, (MAX_SPEED-MIN_SPEED)/2, 0]
         self.model.addCluster(r, x, y, v, theta)
         self.view.addCluster(r, x, y, v, theta)
 
