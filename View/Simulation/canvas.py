@@ -42,13 +42,13 @@ class Canvas(tk.Canvas):
         self.itemconfig(height_label, text=str(self.map_dim[1]) + " m")
         self.update()
 
-    def initPoints(self, pos_list):
+    def initPoints(self, pos_list, color_list):
         for i in range(0, len(pos_list)):
             self.points_list.append(self.create_oval(self.pad[0]+(pos_list[i][0]-PERSON_DIAMETER)*self.PIXEL_PER_METER,
-                                                  self.pad[1]+(pos_list[i][1]-PERSON_DIAMETER)*self.PIXEL_PER_METER,
-                                                  self.pad[0]+(pos_list[i][0]+PERSON_DIAMETER)*self.PIXEL_PER_METER,
-                                                  self.pad[1]+(pos_list[i][1]+PERSON_DIAMETER)*self.PIXEL_PER_METER,
-                                                  fill='red'))
+                                                     self.pad[1]+(pos_list[i][1]-PERSON_DIAMETER)*self.PIXEL_PER_METER,
+                                                     self.pad[0]+(pos_list[i][0]+PERSON_DIAMETER)*self.PIXEL_PER_METER,
+                                                     self.pad[1]+(pos_list[i][1]+PERSON_DIAMETER)*self.PIXEL_PER_METER,
+                                                     fill=color_list[i]))
         self.update()
 
     def updatePoints(self, pos_list):

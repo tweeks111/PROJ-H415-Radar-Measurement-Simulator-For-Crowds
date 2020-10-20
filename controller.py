@@ -32,7 +32,7 @@ class Controller:
             [r, x, y, v, theta] = self.view.editor_window.left_panel.getClustersSettings()
         else:
             [r, x, y, v, theta] = [(MAX_RADIUS-MIN_RADIUS)/2+MIN_RADIUS, self.map_dim[0]/2, self.map_dim[1]/2, (MAX_SPEED-MIN_SPEED)/2+MIN_SPEED, 0]
-        self.model.addCluster(r, x, y, v, theta)
+        self.model.addCluster(r, x, y, v, theta, color)
         self.view.addCluster(r, x, y, v, theta, color)
 
     def removeCluster(self):
@@ -83,7 +83,8 @@ class Controller:
         if self.view.editor_window.left_panel.clusters_listbox.size() > 0:
             self.model.initSimulation()
             pos_list = self.model.getPointsPosition()
-            self.view.initSimulation(pos_list)
+            color_list = self.model.getPointsColor()
+            self.view.initSimulation(pos_list, color_list)
             start_time = 0
             delta_time = 0
             pos_list = []

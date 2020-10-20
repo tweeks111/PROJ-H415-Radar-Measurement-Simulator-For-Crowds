@@ -2,13 +2,14 @@ import math
 
 
 class Cluster:
-    def __init__(self, r, x, y, v, theta):
+    def __init__(self, r, x, y, v, theta, color):
         self.r = r
         self.x = x
         self.y = y
         self.v = v / 3.6
         self.theta = theta * math.pi/180
         self.area = self.computeArea()
+        self.color = color
 
     def updateClusterSettings(self, r, x, y, v, theta):
         self.r = r
@@ -41,3 +42,6 @@ class Cluster:
 
     def getClusterSettings(self):
         return [self.r, self.x, self.y, self.v * 3.6, self.theta * 180/math.pi]
+
+    def getColor(self):
+        return self.color

@@ -56,9 +56,9 @@ class View(tk.Tk):
         if messagebox.askokcancel("Quit", "Do you want to quit ?"):
             self.destroy()
 
-    def initSimulation(self, pos_list):
+    def initSimulation(self, pos_list, color_list):
         self.simulation_window.deiconify()
-        self.simulation_window.initSimulation(pos_list)
+        self.simulation_window.initSimulation(pos_list, color_list)
 
     def clearSimulation(self):
         self.simulation_window.clearSimulation()

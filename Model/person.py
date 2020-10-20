@@ -3,13 +3,15 @@ import math
 
 class Person:
 
-    def __init__(self, x, y, v, theta):
+    def __init__(self, x, y, v, theta, color):
         # Person(x, y)
         self.x = x
         self.y = y
 
         self.vx = v * math.cos(theta)
         self.vy = v * math.sin(theta)
+
+        self.color = color
 
     # Get Functions
     def getX(self):
@@ -23,6 +25,9 @@ class Person:
 
     def getSpeed(self):
         return [self.vx, self.vy]
+
+    def getColor(self):
+        return self.color
 
     # Set Functions
 

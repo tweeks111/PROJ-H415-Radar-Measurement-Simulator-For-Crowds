@@ -24,11 +24,11 @@ class Window(tk.Toplevel):
     def updateSimulation(self, pos_list):
         self.canvas.updatePoints(pos_list)
 
-    def initSimulation(self, pos_list):
+    def initSimulation(self, pos_list, color_list):
 
         self.nb_points_label.configure(text=str(len(pos_list)) + " persons")
         self.canvas.drawMap()
-        self.canvas.initPoints(pos_list)
+        self.canvas.initPoints(pos_list, color_list)
 
     def clearSimulation(self):
         self.canvas.clearSimulation()

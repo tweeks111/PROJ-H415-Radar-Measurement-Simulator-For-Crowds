@@ -26,8 +26,8 @@ class Model:
         self.clusters_list = []
         self.points_list = []
 
-    def addCluster(self, r, x, y, v, theta):
-        self.clusters_list.append(Cluster(r, x, y, v, theta))
+    def addCluster(self, r, x, y, v, theta, color):
+        self.clusters_list.append(Cluster(r, x, y, v, theta, color))
 
     def removeCluster(self, index):
         del self.clusters_list[index]
@@ -42,8 +42,9 @@ class Model:
             temp_pos_list = poissonPointProcess(cluster, 0.3)
             v = cluster.getSpeed()
             theta = cluster.getAngle()
+            color = cluster.getColor()
             for i in range(0, temp_pos_list.shape[1]):
-                self.points_list.append(Person(temp_pos_list[0, i], temp_pos_list[1, i], v, theta))
+                self.points_list.append(Person(temp_pos_list[0, i], temp_pos_list[1, i], v, theta, color))
 
     def getPointsPosition(self):
         pos_list = []
@@ -51,11 +52,18 @@ class Model:
             pos_list.append([point.getX(), point.getY()])
         return pos_list
 
+    def getPointsColor(self):
+        color_list = []
+        for point in self.points_list:
+            color_list.append(point.getColor())
+        return color_list
+
     def updatePointsPosition(self, time):
         pos_list = []
         for point in self.points_list:
             x = point.getX()
             y = point.getY()
+            # TODO : there is a problem in which the point can go through the bounds cause x is already bigger than map_dim
             if x < 0 or x > self.map_dim[0]:
                 point.oppositeVX()
             if y < 0 or y > self.map_dim[1]:
