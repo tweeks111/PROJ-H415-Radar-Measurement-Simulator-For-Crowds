@@ -16,10 +16,11 @@ class LeftPanel(tk.Frame):
         self.cluster_frame.configure(padx=5, pady=5)
         self.cluster_frame.pack()
         yScroll = tk.Scrollbar(self.cluster_frame, orient=tk.VERTICAL)
-        self.clusters_listbox = tk.Listbox(self.cluster_frame, yscrollcommand=yScroll.set, activestyle='none')
+        self.clusters_listbox = tk.Listbox(self.cluster_frame, yscrollcommand=yScroll.set, activestyle='none', selectbackground="red")
         self.clusters_listbox.grid(row=1, column=0, sticky='nsew')
         yScroll.grid(row=1, column=1, sticky='ns')
         yScroll['command'] = self.clusters_listbox.yview()
+        self.clusters_colors = []
         #   Buttons
         self.remove_cluster_btn = tk.Button(self.cluster_frame, text="Remove")
         self.remove_cluster_btn.grid(row=2, column=0, sticky='e')
@@ -60,8 +61,9 @@ class LeftPanel(tk.Frame):
         self.x_scale.configure(from_=float(r), to=self.map_dim[0]-float(r))
         self.y_scale.configure(from_=float(r), to=self.map_dim[1]-float(r))
 
-    def addCluster(self):
+    def addCluster(self, color):
         self.clusters_listbox.insert('end', "Cluster "+str(self.clusters_listbox.size()+1))
+        self.clusters_listbox.itemconfig('end', {'bg':color})
         self.clusters_listbox.select_clear(0, 'end')
         self.clusters_listbox.select_set('end')
         self.clusters_listbox.event_generate("<<ListboxSelect>>")
@@ -85,6 +87,10 @@ class LeftPanel(tk.Frame):
         self.map_dim = map_dim
         self.x_scale.configure(from_=self.radius.get(), to=map_dim[0]-self.radius.get())
         self.y_scale.configure(from_=self.radius.get(), to=map_dim[0]-self.radius.get())
+        self.radius_scale.set((MAX_RADIUS - MIN_RADIUS) / 2 + MIN_RADIUS)
+        self.x_scale.set(map_dim[0]/2)
+        self.y_scale.set(map_dim[1]/2)
+        self.v_scale.set((MAX_SPEED-MIN_SPEED)/2+MIN_SPEED)
         self.update()
 
     def getClustersSettings(self):

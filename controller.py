@@ -1,6 +1,7 @@
 from View import View
 from Model import Model
 import time
+import random
 from constants import *
 
 
@@ -8,6 +9,8 @@ class Controller:
     # Constructor
     def __init__(self):
         self.map_dim = [0, 0]
+        self.colors = ["deep sky blue", "gold", "turquoise", "salmon", "cyan", "tomato", "aquamarine", "maroon", "sea green", "dark violet", "spring green", "olive drab", "khaki",
+                       'goldenrod', "peach puff", "MediumPurple1", "LemonChiffon2", "lavender"]
 
         self.view = View()
         self.model = Model()
@@ -21,12 +24,16 @@ class Controller:
 
     # Controller Functions
     def addCluster(self):
+        random_color_index = random.randrange(0, len(self.colors))
+        color = self.colors[random_color_index]
+        self.colors.remove(color)
+
         if self.view.editor_window.left_panel.clusters_listbox.size() == 0:
             [r, x, y, v, theta] = self.view.editor_window.left_panel.getClustersSettings()
         else:
-            [r, x, y, v, theta] = [(MAX_RADIUS-MIN_RADIUS)/2, self.map_dim[0]/2, self.map_dim[1]/2, (MAX_SPEED-MIN_SPEED)/2, 0]
+            [r, x, y, v, theta] = [(MAX_RADIUS-MIN_RADIUS)/2+MIN_RADIUS, self.map_dim[0]/2, self.map_dim[1]/2, (MAX_SPEED-MIN_SPEED)/2+MIN_SPEED, 0]
         self.model.addCluster(r, x, y, v, theta)
-        self.view.addCluster(r, x, y, v, theta)
+        self.view.addCluster(r, x, y, v, theta, color)
 
     def removeCluster(self):
         index = self.view.editor_window.left_panel.clusters_listbox.curselection()[0]

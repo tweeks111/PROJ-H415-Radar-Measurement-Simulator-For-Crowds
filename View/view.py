@@ -30,8 +30,8 @@ class View(tk.Tk):
     def updateSimulation(self, pos_list):
         self.simulation_window.updateSimulation(pos_list)
 
-    def addCluster(self, r, x, y, v, theta):
-        self.editor_window.addCluster(r, x, y, v, theta)
+    def addCluster(self, r, x, y, v, theta, color):
+        self.editor_window.addCluster(r, x, y, v, theta, color)
 
     def removeCluster(self, index):
         self.editor_window.removeCluster(index)

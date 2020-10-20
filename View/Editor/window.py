@@ -1,5 +1,4 @@
 import tkinter as tk
-from tkinter import messagebox
 from View.Editor import LeftPanel
 from View.Editor import Canvas
 
@@ -13,17 +12,17 @@ class Window(tk.Frame):
         self.left_panel = LeftPanel(self)
         self.canvas = Canvas(self)
 
-    def addCluster(self, r, x, y, v, theta):
-        self.canvas.addCluster(r, x, y, v, theta)
-        self.left_panel.addCluster()
+    def addCluster(self, r, x, y, v, theta, color):
+        self.canvas.addCluster(r, x, y, v, theta, color)
+        self.left_panel.addCluster(color)
 
     def removeCluster(self, index):
         self.left_panel.removeCluster()
         self.canvas.removeCluster(index)
 
     def selectCluster(self, index, r, x, y, v, theta):
-        self.left_panel.selectCluster(r, x, y, v, theta)
         self.canvas.selectCluster(index)
+        self.left_panel.selectCluster(r, x, y, v, theta)
 
     def updateClusterSettings(self, r, x, y, v, theta, index):
         self.canvas.updateClusterSettings(r, x, y, v, theta, index)

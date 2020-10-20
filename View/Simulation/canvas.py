@@ -12,7 +12,6 @@ class Canvas(tk.Canvas):
         self.pixel_map_dim = [0, 0]
         self.pad = [0, 0]
 
-
     def setMapDim(self, map_dim):
         self.map_dim = map_dim
 

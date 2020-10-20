@@ -1,6 +1,8 @@
 import tkinter as tk
 from constants import *
+import random
 import math
+
 
 class Canvas(tk.Canvas):
     def __init__(self, root):
@@ -12,7 +14,9 @@ class Canvas(tk.Canvas):
         self.pixel_map_dim = [0, 0]
         self.pad = [0, 0]
 
-        self.colors = ["deep sky blue", "gold", "turquoise", "salmon", "cyan", "tomato", "aquamarine", "maroon","sea green", "dark violet ", "spring green", "olive drab", "khaki"]
+        self.colors = ["deep sky blue", "gold", "turquoise", "salmon", "cyan", "tomato", "aquamarine", "maroon", "sea green", "dark violet", "spring green", "olive drab", "khaki",
+                       'goldenrod', "peach puff", "MediumPurple1", "LemonChiffon2", "lavender"]
+        self.clusters_colors = []
         self.clusters_list = []
         self.arrows_list = []
 
@@ -39,13 +43,15 @@ class Canvas(tk.Canvas):
         self.itemconfig(height_label, text=str(self.map_dim[1]) + " m")
         self.update()
 
-    def addCluster(self, r, x, y, v, theta):
+    def addCluster(self, r, x, y, v, theta, color):
+
+        self.clusters_colors.append(color)
         self.clusters_list.append(self.create_oval(self.pad[0] + (x - r) * self.PIXEL_PER_METER,
                                                    self.pad[1] + (y - r) * self.PIXEL_PER_METER,
                                                    self.pad[0] + (x + r) * self.PIXEL_PER_METER,
                                                    self.pad[1] + (y + r) * self.PIXEL_PER_METER,
                                                    width=2,
-                                                   outline=self.colors[len(self.clusters_list)]))
+                                                   outline=color))
         vx = v*math.cos(theta*math.pi/180) / 3.6
         vy = v*math.sin(theta*math.pi/180) / 3.6
         self.arrows_list.append(self.create_line(self.pad[0] + x * self.PIXEL_PER_METER,
@@ -53,6 +59,7 @@ class Canvas(tk.Canvas):
                                                  self.pad[0] + (x + vx) * self.PIXEL_PER_METER,
                                                  self.pad[1] + (y + vy) * self.PIXEL_PER_METER,
                                                  width=2,
+                                                 fill=color,
                                                  arrow=tk.LAST))
 
     def removeCluster(self, index):
@@ -64,10 +71,12 @@ class Canvas(tk.Canvas):
 
     def selectCluster(self, index):
         for item in self.clusters_list:
-            self.itemconfig(item, outline=self.colors[self.clusters_list.index(item)])
+            self.itemconfig(item, outline=self.clusters_colors[self.clusters_list.index(item)])
+            self.itemconfig(item, width=2)
         for item in self.arrows_list:
-            self.itemconfig(item, fill='black')
+            self.itemconfig(item, fill=self.clusters_colors[self.arrows_list.index(item)])
         self.itemconfig(self.clusters_list[index], outline="red")
+        self.itemconfig(self.clusters_list[index], width=3)
         self.itemconfig(self.arrows_list[index], fill="red")
 
     def updateClusterSettings(self, r, x, y, v, theta, index):
