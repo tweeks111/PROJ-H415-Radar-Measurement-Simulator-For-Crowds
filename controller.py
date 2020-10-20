@@ -77,6 +77,7 @@ class Controller:
             pos_list = []
             self.is_running = True
             while self.is_running:
+                # TODO : fix the fact that when moving the window, the delta time will be computed normally but it will not check if there is collision
                 start_time = time.time()
                 pos_list = self.model.updatePointsPosition(delta_time)
                 self.view.updateSimulation(pos_list)
