@@ -77,8 +77,9 @@ class LeftPanel(tk.Frame):
         if not self.clusters_listbox.curselection():
             self.remove_cluster_btn['state'] = "disabled"
 
-    def selectCluster(self):
+    def selectCluster(self, r, x, y, v, theta):
         self.remove_cluster_btn['state'] = "normal"
+        self.setSliders(r, x, y, v, theta)
 
     def setMapDim(self, map_dim):
         self.map_dim = map_dim
@@ -89,4 +90,10 @@ class LeftPanel(tk.Frame):
     def getClustersSettings(self):
         return [self.radius_scale.get(), self.x_scale.get(), self.y_scale.get(), self.v_scale.get(), self.angle_scale.get()]
 
-# TODO: Make the sliders update when clicking on another cluster
+    def setSliders(self, r, x, y, v, theta):
+        self.radius_scale.set(r)
+        self.x_scale.set(x)
+        self.y_scale.set(y)
+        self.v_scale.set(v)
+        self.angle_scale.set(theta)
+

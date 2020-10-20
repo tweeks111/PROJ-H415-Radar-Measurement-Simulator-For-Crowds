@@ -36,8 +36,8 @@ class View(tk.Tk):
     def removeCluster(self, index):
         self.editor_window.removeCluster(index)
 
-    def selectCluster(self, index):
-        self.editor_window.selectCluster(index)
+    def selectCluster(self, index, r, x, y, v, theta):
+        self.editor_window.selectCluster(index, r, x, y, v, theta)
 
     def updateClusterSettings(self, r, x, y, v, theta, index):
         self.editor_window.updateClusterSettings(r, x, y, v, theta, index)
@@ -59,3 +59,6 @@ class View(tk.Tk):
     def initSimulation(self, pos_list):
         self.simulation_window.deiconify()
         self.simulation_window.initSimulation(pos_list)
+
+    def clearSimulation(self):
+        self.simulation_window.clearSimulation()

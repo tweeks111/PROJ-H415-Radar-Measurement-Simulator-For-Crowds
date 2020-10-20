@@ -39,7 +39,7 @@ class Model:
         self.points_list.clear()
 
         for cluster in self.clusters_list:
-            temp_pos_list = poissonPointProcess(cluster, 0.5)
+            temp_pos_list = poissonPointProcess(cluster, 0.3)
             v = cluster.getSpeed()
             theta = cluster.getAngle()
             for i in range(0, temp_pos_list.shape[1]):
@@ -67,3 +67,6 @@ class Model:
 
     def setMapDim(self, map_dim):
         self.map_dim = map_dim
+
+    def getClusterSettings(self, index):
+        return self.clusters_list[index].getClusterSettings()

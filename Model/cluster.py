@@ -38,3 +38,6 @@ class Cluster:
 
     def getSpeed(self):
         return self.v
+
+    def getClusterSettings(self):
+        return [self.r, self.x, self.y, self.v * 3.6, self.theta * 180/math.pi]

@@ -12,6 +12,7 @@ class Canvas(tk.Canvas):
         self.pixel_map_dim = [0, 0]
         self.pad = [0, 0]
 
+        self.colors = ["deep sky blue", "gold", "turquoise", "salmon", "cyan", "tomato", "aquamarine", "maroon","sea green", "dark violet ", "spring green", "olive drab", "khaki"]
         self.clusters_list = []
         self.arrows_list = []
 
@@ -43,7 +44,8 @@ class Canvas(tk.Canvas):
                                                    self.pad[1] + (y - r) * self.PIXEL_PER_METER,
                                                    self.pad[0] + (x + r) * self.PIXEL_PER_METER,
                                                    self.pad[1] + (y + r) * self.PIXEL_PER_METER,
-                                                   width=2))
+                                                   width=2,
+                                                   outline=self.colors[len(self.clusters_list)]))
         vx = v*math.cos(theta*math.pi/180) / 3.6
         vy = v*math.sin(theta*math.pi/180) / 3.6
         self.arrows_list.append(self.create_line(self.pad[0] + x * self.PIXEL_PER_METER,
@@ -62,7 +64,7 @@ class Canvas(tk.Canvas):
 
     def selectCluster(self, index):
         for item in self.clusters_list:
-            self.itemconfig(item, outline='black')
+            self.itemconfig(item, outline=self.colors[self.clusters_list.index(item)])
         for item in self.arrows_list:
             self.itemconfig(item, fill='black')
         self.itemconfig(self.clusters_list[index], outline="red")

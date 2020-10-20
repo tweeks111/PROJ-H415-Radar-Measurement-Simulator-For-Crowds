@@ -21,8 +21,8 @@ class Window(tk.Frame):
         self.left_panel.removeCluster()
         self.canvas.removeCluster(index)
 
-    def selectCluster(self, index):
-        self.left_panel.selectCluster()
+    def selectCluster(self, index, r, x, y, v, theta):
+        self.left_panel.selectCluster(r, x, y, v, theta)
         self.canvas.selectCluster(index)
 
     def updateClusterSettings(self, r, x, y, v, theta, index):

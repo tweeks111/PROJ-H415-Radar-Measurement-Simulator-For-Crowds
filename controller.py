@@ -21,8 +21,8 @@ class Controller:
     # Controller Functions
     def addCluster(self):
         [r, x, y, v, theta] = self.view.editor_window.left_panel.getClustersSettings()
-        self.view.addCluster(r, x, y, v, theta)
         self.model.addCluster(r, x, y, v, theta)
+        self.view.addCluster(r, x, y, v, theta)
 
     def removeCluster(self):
         index = self.view.editor_window.left_panel.clusters_listbox.curselection()[0]
@@ -33,7 +33,8 @@ class Controller:
     def selectCluster(self, event):
         if self.view.editor_window.left_panel.clusters_listbox.size() > 0:
             index = self.view.editor_window.left_panel.clusters_listbox.curselection()[0]
-            self.view.selectCluster(index)
+            [r, x, y, v, theta] = self.model.getClusterSettings(index)
+            self.view.selectCluster(index, r, x, y, v, theta)
 
     # Configuration
     def configureSizeDialog(self):
@@ -84,4 +85,4 @@ class Controller:
     def closeSimulation(self):
         self.is_running = False
         self.view.simulation_window.withdraw()
-        self.view.simulation_window.canvas.delete('all')
+        self.view.clearSimulation()

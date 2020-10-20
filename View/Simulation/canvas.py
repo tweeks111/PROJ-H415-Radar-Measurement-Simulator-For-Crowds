@@ -12,7 +12,6 @@ class Canvas(tk.Canvas):
         self.pixel_map_dim = [0, 0]
         self.pad = [0, 0]
 
-        self.pack()
 
     def setMapDim(self, map_dim):
         self.map_dim = map_dim
@@ -20,8 +19,6 @@ class Canvas(tk.Canvas):
         self.PIXEL_PER_METER = self.computePixelRatio()
         self.pixel_map_dim = self.computePixelMapDim()
         self.pad = self.computePad()
-
-        self.drawMap()
 
     def computePixelRatio(self):
         min_canvas_size = min(CANVAS_WIDTH-100, CANVAS_HEIGHT-100)
@@ -63,3 +60,8 @@ class Canvas(tk.Canvas):
                         self.pad[0]+(pos_list[i][0]+PERSON_DIAMETER)*self.PIXEL_PER_METER,
                         self.pad[1]+(pos_list[i][1]+PERSON_DIAMETER)*self.PIXEL_PER_METER)
         self.update()
+
+    def clearSimulation(self):
+        for point in self.points_list:
+            self.delete(point)
+        self.points_list.clear()
