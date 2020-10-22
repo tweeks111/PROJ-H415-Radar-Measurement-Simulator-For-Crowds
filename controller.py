@@ -9,8 +9,8 @@ class Controller:
     # Constructor
     def __init__(self):
         self.map_dim = [0, 0]
-        self.colors = ["deep sky blue", "gold", "turquoise", "salmon", "cyan", "tomato", "aquamarine", "maroon", "sea green", "dark violet", "spring green", "olive drab", "khaki",
-                       'goldenrod', "peach puff", "MediumPurple1", "LemonChiffon2", "lavender"]
+        self.colors = ["light goldenrod", "light blue", "RosyBrown1", "MediumPurple1", "pale green", "LemonChiffon2",
+                       "LemonChiffon3", "ivory3", "LavenderBlush3", "thistle", "PaleGreen3", "DarkSlateGray1", "DarkSlateGray3", "thistle3"]
 
         self.view = View()
         self.model = Model()
@@ -29,10 +29,10 @@ class Controller:
         self.colors.remove(color)
 
         if self.view.editor_window.left_panel.clusters_listbox.size() == 0:
-            [r, x, y, v, theta] = self.view.editor_window.left_panel.getClustersSettings()
+            [r, x, y, v, theta, lambda0] = self.view.editor_window.left_panel.getClustersSettings()
         else:
-            [r, x, y, v, theta] = [(MAX_RADIUS-MIN_RADIUS)/2+MIN_RADIUS, self.map_dim[0]/2, self.map_dim[1]/2, (MAX_SPEED-MIN_SPEED)/2+MIN_SPEED, 0]
-        self.model.addCluster(r, x, y, v, theta, color)
+            [r, x, y, v, theta, lambda0] = [(MAX_RADIUS - MIN_RADIUS) / 2 + MIN_RADIUS, self.map_dim[0] / 2, self.map_dim[1] / 2, (MAX_SPEED - MIN_SPEED) / 2 + MIN_SPEED, 0, 0.5]
+        self.model.addCluster(r, x, y, v, theta, lambda0, color)
         self.view.addCluster(r, x, y, v, theta, color)
 
     def removeCluster(self):
@@ -45,8 +45,8 @@ class Controller:
     def selectCluster(self, event):
         if self.view.editor_window.left_panel.clusters_listbox.size() > 0:
             index = self.view.editor_window.left_panel.clusters_listbox.curselection()[0]
-            [r, x, y, v, theta] = self.model.getClusterSettings(index)
-            self.view.selectCluster(index, r, x, y, v, theta)
+            [r, x, y, v, theta, lambda0] = self.model.getClusterSettings(index)
+            self.view.selectCluster(index, r, x, y, v, theta, lambda0)
 
     # Configuration
     def configureSizeDialog(self):
@@ -61,19 +61,21 @@ class Controller:
         self.view.editor_window.left_panel.y_scale.configure(command=self.updateClusterSettings)
         self.view.editor_window.left_panel.v_scale.configure(command=self.updateClusterSettings)
         self.view.editor_window.left_panel.angle_scale.configure(command=self.updateClusterSettings)
+        self.view.editor_window.left_panel.lambda_scale.configure(command=self.updateClusterSettings)
         self.view.editor_window.left_panel.run_btn.configure(command=self.runSimulation)
 
     def initMapSize(self):
         self.map_dim = self.view.size_dialog.getValues()
         self.view.setMapDim(self.map_dim)
         self.model.setMapDim(self.map_dim)
+        self.view.centerWindow()
 
     def updateClusterSettings(self, var):
         if self.view.editor_window.left_panel.clusters_listbox.size() > 0:
             index = self.view.editor_window.left_panel.clusters_listbox.curselection()[0]
-            [r, x, y, v, theta] = self.view.editor_window.left_panel.getClustersSettings()
+            [r, x, y, v, theta, lambda0] = self.view.editor_window.left_panel.getClustersSettings()
             self.view.updateClusterSettings(r, x, y, v, theta, index)
-            self.model.updateClusterSettings(r, x, y, v, theta, index)
+            self.model.updateClusterSettings(r, x, y, v, theta, lambda0, index)
 
     def updateRadius(self, r):
         self.view.updateRadius(r)
@@ -81,6 +83,8 @@ class Controller:
 
     def runSimulation(self):
         if self.view.editor_window.left_panel.clusters_listbox.size() > 0:
+            # TODO : when moving the window some points change their position
+            self.view.editor_window.left_panel.run_btn.configure(command=self.closeSimulation, text="Stop Simulation")
             self.model.initSimulation()
             pos_list = self.model.getPointsPosition()
             color_list = self.model.getPointsColor()
@@ -90,7 +94,6 @@ class Controller:
             pos_list = []
             self.is_running = True
             while self.is_running:
-                # TODO : fix the fact that when moving the window, the delta time will be computed normally but it will not check if there is collision
                 start_time = time.time()
                 pos_list = self.model.updatePointsPosition(delta_time)
                 self.view.updateSimulation(pos_list)
@@ -98,5 +101,6 @@ class Controller:
 
     def closeSimulation(self):
         self.is_running = False
+        self.view.editor_window.left_panel.run_btn.configure(command=self.runSimulation, text="Run Simulation")
         self.view.simulation_window.withdraw()
         self.view.clearSimulation()

@@ -2,7 +2,7 @@ import math
 
 
 class Cluster:
-    def __init__(self, r, x, y, v, theta, color):
+    def __init__(self, r, x, y, v, theta, lambda0, color):
         self.r = r
         self.x = x
         self.y = y
@@ -10,14 +10,16 @@ class Cluster:
         self.theta = theta * math.pi/180
         self.area = self.computeArea()
         self.color = color
+        self.lambda0 = lambda0
 
-    def updateClusterSettings(self, r, x, y, v, theta):
+    def updateClusterSettings(self, r, x, y, v, theta, lambda0):
         self.r = r
         self.x = x
         self.y = y
         self.v = v / 3.6
         self.theta = theta * math.pi/180
         self.area = self.computeArea()
+        self.lambda0 = lambda0
 
     def computeArea(self):
         return math.pi * self.r ** 2
@@ -40,8 +42,11 @@ class Cluster:
     def getSpeed(self):
         return self.v
 
+    def getLambda0(self):
+        return self.lambda0
+
     def getClusterSettings(self):
-        return [self.r, self.x, self.y, self.v * 3.6, self.theta * 180/math.pi]
+        return [self.r, self.x, self.y, self.v * 3.6, self.theta * 180/math.pi, self.lambda0]
 
     def getColor(self):
         return self.color

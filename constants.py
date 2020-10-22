@@ -1,8 +1,8 @@
 """Constants"""
 
 # Canvas
-CANVAS_WIDTH = 700
-CANVAS_HEIGHT = 700
+CANVAS_WIDTH = 800
+CANVAS_HEIGHT = 800
 PERSON_DIAMETER = 0.5
 
 # Person Speed
@@ -16,4 +16,3 @@ MAX_RADIUS = 3
 # Map Dimension
 MIN_RECTANGLE = 10
 MAX_RECTANGLE = 40
-

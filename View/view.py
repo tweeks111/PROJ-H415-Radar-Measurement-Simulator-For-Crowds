@@ -17,8 +17,6 @@ class View(tk.Tk):
         self.title("Size configuration")
         self.resizable(False, False)
 
-        self.eval('tk::PlaceWindow . center')
-
         self.map_dim = [0, 0]
 
         self.size_dialog = Editor.SizeDialog(self)
@@ -26,6 +24,8 @@ class View(tk.Tk):
         self.editor_window = Editor.Window(self)
         self.simulation_window = Sim.Window(self)
         self.simulation_window.withdraw()
+
+        self.centerWindow()
 
     def updateSimulation(self, pos_list):
         self.simulation_window.updateSimulation(pos_list)
@@ -36,8 +36,8 @@ class View(tk.Tk):
     def removeCluster(self, index):
         self.editor_window.removeCluster(index)
 
-    def selectCluster(self, index, r, x, y, v, theta):
-        self.editor_window.selectCluster(index, r, x, y, v, theta)
+    def selectCluster(self, index, r, x, y, v, theta, lambda0):
+        self.editor_window.selectCluster(index, r, x, y, v, theta, lambda0)
 
     def updateClusterSettings(self, r, x, y, v, theta, index):
         self.editor_window.updateClusterSettings(r, x, y, v, theta, index)
@@ -62,3 +62,15 @@ class View(tk.Tk):
 
     def clearSimulation(self):
         self.simulation_window.clearSimulation()
+
+    def centerWindow(self):
+        w = self.winfo_reqwidth()
+        h = self.winfo_reqheight()
+        ws = self.winfo_screenwidth()
+        hs = self.winfo_screenheight()
+        print(str(w)+" "+str(h)+" "+str(ws)+" "+str(hs))
+        x = (ws / 2) - (w / 2)
+        y = (hs / 2) - (h / 2)
+        self.geometry('+%d+%d' % (x, y))
+        self.update()
+

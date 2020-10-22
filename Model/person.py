@@ -48,3 +48,8 @@ class Person:
     def updatePos(self, time):
         self.x = self.x + self.vx*time
         self.y = self.y + self.vy*time
+
+    def computeNewPos(self, time):
+        new_x = self.x + self.vx*time
+        new_y = self.y + self.vy*time
+        return [new_x, new_y]
