@@ -20,6 +20,11 @@ class Canvas(tk.Canvas):
         self.clusters_list = []
         self.arrows_list = []
 
+        self.TX = None
+        self.TX_label = None
+        self.RX = None
+        self.RX_label = None
+
     def computePixelRatio(self):
         min_canvas_size = min(CANVAS_WIDTH-100, CANVAS_HEIGHT-100)
         max_map_size = max(self.map_dim[0], self.map_dim[1])
@@ -42,6 +47,25 @@ class Canvas(tk.Canvas):
         height_label = self.create_text(self.pad[0] - 30, CANVAS_HEIGHT / 2)
         self.itemconfig(height_label, text=str(self.map_dim[1]) + " m")
         self.update()
+
+    def initRadar(self, tx_pos, rx_pos):
+        self.TX = self.create_oval(self.pad[0] + (tx_pos[0]-RADAR_RADIUS) * self.PIXEL_PER_METER,
+                                   self.pad[1] + (tx_pos[1]-RADAR_RADIUS) * self.PIXEL_PER_METER,
+                                   self.pad[0] + (tx_pos[0]+RADAR_RADIUS) * self.PIXEL_PER_METER,
+                                   self.pad[1] + (tx_pos[1]+RADAR_RADIUS) * self.PIXEL_PER_METER,
+                                   fill="red")
+        # TODO : adjust size of the text with the size of the map
+        self.TX_label = self.create_text(self.pad[0] + (tx_pos[0]) * self.PIXEL_PER_METER,
+                                         self.pad[1] + (tx_pos[1]) * self.PIXEL_PER_METER,
+                                         text="TX", fill="white")
+        self.RX = self.create_oval(self.pad[0] + (rx_pos[0] - RADAR_RADIUS) * self.PIXEL_PER_METER,
+                                   self.pad[1] + (rx_pos[1] - RADAR_RADIUS) * self.PIXEL_PER_METER,
+                                   self.pad[0] + (rx_pos[0] + RADAR_RADIUS) * self.PIXEL_PER_METER,
+                                   self.pad[1] + (rx_pos[1] + RADAR_RADIUS) * self.PIXEL_PER_METER,
+                                   fill="blue")
+        self.RX_label = self.create_text(self.pad[0] + (rx_pos[0]) * self.PIXEL_PER_METER,
+                                         self.pad[1] + (rx_pos[1]) * self.PIXEL_PER_METER,
+                                         text="RX", fill="white")
 
     def addCluster(self, r, x, y, v, theta, color):
 
@@ -94,6 +118,24 @@ class Canvas(tk.Canvas):
                     self.pad[1] + y * self.PIXEL_PER_METER,
                     self.pad[0] + (x + vx) * self.PIXEL_PER_METER,
                     self.pad[1] + (y + vy) * self.PIXEL_PER_METER)
+
+    def updateRadarSettings(self, tx_x, tx_y, rx_x, rx_y):
+        self.coords(self.TX,
+                    self.pad[0] + (tx_x-RADAR_RADIUS)*self.PIXEL_PER_METER,
+                    self.pad[1] + (tx_y-RADAR_RADIUS)*self.PIXEL_PER_METER,
+                    self.pad[0] + (tx_x+RADAR_RADIUS)*self.PIXEL_PER_METER,
+                    self.pad[1] + (tx_y+RADAR_RADIUS)*self.PIXEL_PER_METER)
+        self.coords(self.RX,
+                    self.pad[0] + (rx_x - RADAR_RADIUS) * self.PIXEL_PER_METER,
+                    self.pad[1] + (rx_y - RADAR_RADIUS) * self.PIXEL_PER_METER,
+                    self.pad[0] + (rx_x + RADAR_RADIUS) * self.PIXEL_PER_METER,
+                    self.pad[1] + (rx_y + RADAR_RADIUS) * self.PIXEL_PER_METER)
+        self.coords(self.TX_label,
+                    self.pad[0] + tx_x * self.PIXEL_PER_METER,
+                    self.pad[1] + tx_y * self.PIXEL_PER_METER)
+        self.coords(self.RX_label,
+                    self.pad[0] + rx_x * self.PIXEL_PER_METER,
+                    self.pad[1] + rx_y * self.PIXEL_PER_METER)
 
     def setMapDim(self, map_dim):
         self.map_dim = map_dim

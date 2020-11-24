@@ -10,25 +10,31 @@ class Window(tk.Toplevel):
 
         self.map_dim = [0, 0]
 
-        self.top_frame = tk.Frame(self)
-        self.top_frame.pack(side=tk.TOP)
-        self.nb_points_label = tk.Label(self.top_frame)
-        self.nb_points_label.pack()
         self.canvas = View.Simulation.Canvas(self)
-        self.canvas.pack()
+        self.canvas.get_tk_widget().pack(side=tk.LEFT)
+        self.rdm_canvas = View.Simulation.RDMCanvas(self)
+        self.rdm_canvas.get_tk_widget().pack(side=tk.RIGHT)
+
+    def initSimulation(self, pos_list, color_list, tx_pos, rx_pos, x, y, z):
+        self.canvas.drawMap()
+        self.initRadar(tx_pos, rx_pos)
+        self.canvas.initPoints(pos_list, color_list)
+        self.rdm_canvas.initRDM(x, y, z)
+        
+    def updateSimulation(self, pos_list):
+        self.canvas.updatePoints(pos_list)
+
+    def initRadar(self, tx_pos, rx_pos):
+        self.canvas.initRadar(tx_pos, rx_pos)
+
+    def clearSimulation(self):
+        self.canvas.clearSimulation()
+
+    def plotRDM(self, z):
+        self.rdm_canvas.updateRDM(z)
+
+    # -- Set Functions -- #
 
     def setMapDim(self, map_dim):
         self.map_dim = map_dim
         self.canvas.setMapDim(map_dim)
-
-    def updateSimulation(self, pos_list):
-        self.canvas.updatePoints(pos_list)
-
-    def initSimulation(self, pos_list, color_list):
-
-        self.nb_points_label.configure(text=str(len(pos_list)) + " persons")
-        self.canvas.drawMap()
-        self.canvas.initPoints(pos_list, color_list)
-
-    def clearSimulation(self):
-        self.canvas.clearSimulation()

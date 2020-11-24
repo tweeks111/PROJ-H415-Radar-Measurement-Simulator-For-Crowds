@@ -42,6 +42,9 @@ class View(tk.Tk):
     def updateClusterSettings(self, r, x, y, v, theta, index):
         self.editor_window.updateClusterSettings(r, x, y, v, theta, index)
 
+    def updateRadarSettings(self, tx_x, tx_y, rx_x, rx_y):
+        self.editor_window.updateRadarSettings(tx_x, tx_y, rx_x, rx_y)
+
     def updateRadius(self, r):
         self.editor_window.updateRadius(r)
 
@@ -56,9 +59,15 @@ class View(tk.Tk):
         if messagebox.askokcancel("Quit", "Do you want to quit ?"):
             self.destroy()
 
-    def initSimulation(self, pos_list, color_list):
+    def initSimulation(self, pos_list, color_list, tx_pos, rx_pos, x, y, z):
         self.simulation_window.deiconify()
-        self.simulation_window.initSimulation(pos_list, color_list)
+        self.simulation_window.initSimulation(pos_list, color_list, tx_pos, rx_pos, x, y, z)
+
+    def initRadar(self, tx_x, tx_y, rx_x, rx_y):
+        self.editor_window.initRadar(tx_x, tx_y, rx_x, rx_y)
+
+    def updateRDM(self, z):
+        self.simulation_window.plotRDM(z)
 
     def clearSimulation(self):
         self.simulation_window.clearSimulation()
@@ -68,9 +77,7 @@ class View(tk.Tk):
         h = self.winfo_reqheight()
         ws = self.winfo_screenwidth()
         hs = self.winfo_screenheight()
-        print(str(w)+" "+str(h)+" "+str(ws)+" "+str(hs))
         x = (ws / 2) - (w / 2)
         y = (hs / 2) - (h / 2)
         self.geometry('+%d+%d' % (x, y))
         self.update()
-

@@ -29,7 +29,7 @@ class LeftPanel(tk.Frame):
         self.add_cluster_btn.grid(row=2, column=1)
 
         # Clusters configuration
-        self.clusters_config = tk.LabelFrame(self, text="Configuration")
+        self.clusters_config = tk.LabelFrame(self, text="Cluster Settings")
         self.clusters_config.configure(padx=5, pady=5)
         self.clusters_config.pack(fill=tk.X)
 
@@ -49,7 +49,7 @@ class LeftPanel(tk.Frame):
         v_label.grid(row=3, column=0)
         self.v_scale = tk.Scale(self.clusters_config, from_=MIN_SPEED, to=MAX_SPEED, resolution=0.5, orient=tk.HORIZONTAL)
         self.v_scale.grid(row=3, column=1)
-        angle_label = tk.Label(self.clusters_config, text="\u03B8 :\n[°]")
+        angle_label = tk.Label(self.clusters_config, text="\u03B1 :\n[°]")
         angle_label.grid(row=4, column=0)
         self.angle_scale = tk.Scale(self.clusters_config, from_=0, to=360, resolution=15, orient=tk.HORIZONTAL)
         self.angle_scale.grid(row=4, column=1)
@@ -58,35 +58,6 @@ class LeftPanel(tk.Frame):
         self.lambda_scale = tk.Scale(self.clusters_config, from_=0, to=1, resolution=0.1, orient=tk.HORIZONTAL)
         self.lambda_scale.set(0.5)
         self.lambda_scale.grid(row=5, column=1)
-
-        # Radar Frame
-        self.radar_frame = tk.LabelFrame(self, text="Radar")
-        self.radar_frame.configure(padx=5, pady=5)
-        self.radar_frame.pack(fill=tk.X)
-        TX_label = tk.Label(self.radar_frame, text="TX :")
-        TX_label.grid(row=0, column=0)
-        TX_x_label = tk.Label(self.radar_frame, text="x :\n[m]")
-        TX_x_label.grid(row=0, column=1)
-        self.TX_x_scale = tk.Scale(self.radar_frame, from_=0, to=0, orient=tk.HORIZONTAL, resolution=0.1)
-        self.TX_x_scale.grid(row=0, column=2)
-        TX_y_label = tk.Label(self.radar_frame, text="y :\n[m]")
-        TX_y_label.grid(row=1, column=1)
-        self.TX_y_scale = tk.Scale(self.radar_frame, from_=0, to=0, orient=tk.HORIZONTAL, resolution=0.1)
-        self.TX_y_scale.grid(row=1, column=2)
-        RX_label = tk.Label(self.radar_frame, text="RX :")
-        RX_label.grid(row=2, column=0)
-        RX_x_label = tk.Label(self.radar_frame, text="x :\n[m]")
-        RX_x_label.grid(row=2, column=1)
-        self.RX_x_scale = tk.Scale(self.radar_frame, from_=0, to=0, orient=tk.HORIZONTAL, resolution=0.1)
-        self.RX_x_scale.grid(row=2, column=2)
-        RX_y_label = tk.Label(self.radar_frame, text="y :\n[m]")
-        RX_y_label.grid(row=3, column=1)
-        self.RX_y_scale = tk.Scale(self.radar_frame, from_=0, to=0, orient=tk.HORIZONTAL, resolution=0.1)
-        self.RX_y_scale.grid(row=3, column=2)
-
-
-        self.run_btn = tk.Button(self, text="Run Simulation")
-        self.run_btn.pack()
 
     def updateRadius(self, r):
         self.x_scale.configure(from_=float(r), to=self.map_dim[0]-float(r))
