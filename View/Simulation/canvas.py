@@ -14,8 +14,8 @@ class Canvas(FigureCanvasTkAgg):
 
         self.background = None
 
-        self.map_dim = [0, 0]
-        self.points = []
+        self.map_dim    = [0, 0]
+        self.points     = []
 
     def setMapDim(self, map_dim):
         self.map_dim = map_dim

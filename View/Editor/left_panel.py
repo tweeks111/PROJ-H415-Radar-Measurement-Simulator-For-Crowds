@@ -93,7 +93,6 @@ class LeftPanel(tk.Frame):
         self.x_scale.set(map_dim[0]/2)
         self.y_scale.set(map_dim[1]/2)
         self.v_scale.set((MAX_SPEED-MIN_SPEED)/2+MIN_SPEED)
-        self.update()
 
     def getClustersSettings(self):
         return [self.radius_scale.get(), self.x_scale.get(), self.y_scale.get(), self.v_scale.get(), self.angle_scale.get(), self.lambda_scale.get()]

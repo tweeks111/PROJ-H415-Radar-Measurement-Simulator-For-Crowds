@@ -3,6 +3,7 @@ from Model.person import Person
 import numpy as np
 import scipy.stats
 from cmath import *
+import math
 from constants import *
 
 P_TX = 1  # Power of the transmitter
@@ -10,14 +11,14 @@ G_TX = 1  # Gain of the transmitter
 G_RX = 1  # Gain of the receiver
 L_TX = 1  # Losses at the transmitting side
 L_RX = 1  # Losses at the receiving sid
-N0_dBm = -174  #PSD of noise [dBm/Hz]
-N0 = 10**(N0_dBm/10-3)  #PSD of noise [W/Hz]
+N0_dBm = -174  # PSD of noise [dBm/Hz]
+N0 = 10 ** (N0_dBm / 10 - 3)  # PSD of noise [W/Hz]
 
 f_c = 5e9  # Carrier frequency
 BW = 80e6  # Bandwidth
 Q = 1024  # Number of OFDM carriers
 L = 64  # Number of taps in the channel, corresponding to a duration of L*Delta_tau
-M = 64  # Number of OFDM symbols used for averaging in channel estimation
+M = 32  # Number of OFDM symbols used for averaging in channel estimation
 N = 64  # Number of channel estimations to obtain one RDM
 N_a = 4  # Number of antennas at the receiver
 d_ant = 0.06  # Distance between each antenna
@@ -40,8 +41,8 @@ f_res = 1 / (N * M * Delta_t)
 v_res = lambda_c / (2 * N * M * Delta_t)
 T_dwell = N * M * Delta_t
 alpha_res = 3
-P_noise = N0*BW
-bin_i = np.arange(0, Q*Ts, Ts)
+P_noise = N0 * BW
+bin_i = np.arange(0, Q * Ts, Ts)
 
 
 def poissonPointProcess(cluster):
@@ -49,8 +50,8 @@ def poissonPointProcess(cluster):
     nb_points = scipy.stats.poisson(lambda0 * cluster.getArea()).rvs()
     r = cluster.getRadius() * np.random.uniform(0, 1, nb_points)
     theta = 2 * pi * np.random.uniform(0, 1, nb_points)
-    x0 = [cos(i) for i in theta]
-    y0 = [sin(i) for i in theta]
+    x0 = [math.cos(i) for i in theta]
+    y0 = [math.sin(i) for i in theta]
     x1 = np.multiply(r, x0)
     y1 = np.multiply(r, y0)
     x = [i + cluster.getX() for i in x1]
@@ -110,36 +111,37 @@ class Model:
         P_RXn = np.zeros(len(self.points), dtype=float)
 
         for point in range(len(self.points)):
-            d_tx[point], d_rx[point], DoA[point], f_d[point] = self.points[point].computeParameters(self.tx_pos, self.rx_pos)
+            d_tx[point], d_rx[point], DoA[point], f_d[point] = self.points[point].computeParameters(self.tx_pos,
+                                                                                                    self.rx_pos)
             tau_n[point] = (d_tx[point] + d_rx[point]) / C
             idx[point] = (np.searchsorted(bin_i, tau_n[point], side='right') - 1)
-            P_RXn[point] = (P_TX * G_TX * G_RX * (lambda_c / (d_tx[point] * d_rx[point])) ** 2) / (L_RX * L_TX * (4 * pi) ** 3)
+            P_RXn[point] = (P_TX * G_TX * G_RX * (lambda_c / (d_tx[point] * d_rx[point])) ** 2) / (
+                        L_RX * L_TX * (4 * pi) ** 3)
 
-        h = np.zeros((Q, N*M, N_a), dtype=complex)   # range slow-time map
-        h2 = np.zeros((Q, M, N, N_a), dtype=complex)
-        h_avg = np.zeros((Q, N, N_a), dtype=complex)
-        H = np.zeros((Q, N, N_a), dtype=float)
-        W = np.zeros((Q, N, N_a), dtype=float)
+        h = np.zeros((Q, N * M, N_a), dtype=complex)  # range slow-time map
+        n = np.zeros((Q, N * M, N_a), dtype=complex)
 
         for point in range(len(self.points)):
             i = idx[point]
             for l in range(N_a):
-                for k in range(N*M):
-                    h[i, k, l] = h[i, k, l] + sqrt(P_RXn[point]) * exp(-1j * 2 * pi * f_c * tau_n[point]) * exp(1j * 2 * pi * k * f_d[point] * T) * exp(
-                           1j * 2 * pi * l * (d_ant / lambda_c) * sin(DoA[point]))
+                for k in range(N * M):
+                    h[i, k, l] = h[i, k, l] + sqrt(P_RXn[point]) \
+                                 * exp(-1j * 2 * pi * f_c * tau_n[point]) \
+                                 * exp(1j * 2 * pi * k * f_d[point] * T) \
+                                 * exp(1j * 2 * pi * l * (d_ant / lambda_c) * sin(DoA[point]))
 
-        h2 = np.reshape(h, (Q, M, N, N_a))
-        h_avg = np.squeeze(np.mean(h2, 2))
+        n1 = np.random.normal(0, 1, (Q, M * N, N_a)) * sqrt(P_noise / 2)
+        n2 = np.random.normal(0, 1, (Q, M * N, N_a)) * sqrt(P_noise / 2)
+        h2 = h + n1 + n2 * 1j
 
-        H = np.fft.fftshift(np.fft.fft(h_avg, n=N, axis=1), axes=1)
+        h3 = np.reshape(h2, (Q, M, N, N_a))
+        h_avg = np.squeeze(np.mean(h3, axis=2))
 
-        W = np.random.normal(0, 1, (Q, N, N_a))*sqrt(P_noise)
+        RDC = np.fft.fftshift(np.fft.fft(h_avg, n=N, axis=1), axes=1)
 
-        H2 = H + W
-
-        x = np.arange(-N/4*v_res, N/4*v_res, v_res)
-        y = np.arange(0, 30*d_res, d_res)
-        z = 20*np.log10(np.abs(H2[0:30, int(N/4):int(3*N/4), 1]))
+        x = np.arange(-N / 4 * v_res, N / 4 * v_res, v_res)
+        y = np.arange(0, 30 * d_res, d_res)
+        z = 20 * np.log10(np.abs(RDC[0:30, int(N / 4):int(3 * N / 4), 0]))
         """
         fig = plt.figure()
         # ax = fig.gca(projection='3d')

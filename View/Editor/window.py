@@ -10,9 +10,9 @@ class Window(tk.Frame):
 
         self.map_dim = [0, 0]
 
-        self.left_panel = LeftPanel(self)
-        self.canvas = Canvas(self)
-        self.right_panel = RightPanel(self)
+        self.left_panel     = LeftPanel(self)
+        self.canvas         = Canvas(self)
+        self.right_panel    = RightPanel(self)
 
     def addCluster(self, r, x, y, v, theta, color):
         self.canvas.addCluster(r, x, y, v, theta, color)

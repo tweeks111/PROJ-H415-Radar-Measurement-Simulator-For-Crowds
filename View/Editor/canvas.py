@@ -46,7 +46,7 @@ class Canvas(tk.Canvas):
         self.itemconfig(width_label, text=str(self.map_dim[0])+" m")
         height_label = self.create_text(self.pad[0] - 30, CANVAS_HEIGHT / 2)
         self.itemconfig(height_label, text=str(self.map_dim[1]) + " m")
-        self.update()
+        self.update_idletasks()
 
     def initRadar(self, tx_pos, rx_pos):
         self.TX = self.create_oval(self.pad[0] + (tx_pos[0]-RADAR_RADIUS) * self.PIXEL_PER_METER,
@@ -91,7 +91,7 @@ class Canvas(tk.Canvas):
         self.delete(self.arrows_list[index])
         del self.clusters_list[index]
         del self.arrows_list[index]
-        self.update()
+        self.update_idletasks()
 
     def selectCluster(self, index):
         for item in self.clusters_list:

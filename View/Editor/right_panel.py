@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter.ttk import Progressbar
 from constants import *
 
 
@@ -34,6 +35,22 @@ class RightPanel(tk.Frame):
         self.RX_y_scale = tk.Scale(self.radar_frame, from_=0, to=0, orient=tk.HORIZONTAL, resolution=0.1)
         self.RX_y_scale.grid(row=3, column=2)
 
+        self.sim_frame = tk.LabelFrame(self, text="Simulation")
+        self.sim_frame.configure(padx=5, pady=5)
+        self.sim_frame.pack(fill=tk.X)
+        time_label = tk.Label(self.sim_frame, text="Duration :\n[s]")
+        time_label.grid(row=0, column=0)
+        self.time_scale = tk.Scale(self.sim_frame, from_=1, to=20, orient=tk.HORIZONTAL, resolution=1)
+        self.time_scale.grid(row=0, column=2)
+        self.time_scale.set(10)
+        rdm_label = tk.Label(self.sim_frame, text="RDM Freq. :\n[Hz]")
+        rdm_label.grid(row=1, column=0)
+        self.rdm_scale = tk.Scale(self.sim_frame, from_=1, to=4, orient=tk.HORIZONTAL, resolution=1)
+        self.rdm_scale.grid(row=1, column=2)
+        self.rdm_scale.set(2)
+
+        self.progress_bar = Progressbar(self, orient=tk.HORIZONTAL, mode='determinate')
+        self.progress_bar.pack(fill=tk.BOTH)
         self.run_btn = tk.Button(self, text="Run Simulation")
         self.run_btn['state'] = 'disabled'
         self.run_btn.pack(fill=tk.BOTH)
@@ -53,3 +70,7 @@ class RightPanel(tk.Frame):
 
     def getRadarSettings(self):
         return [self.TX_x_scale.get(), self.TX_y_scale.get(), self.RX_x_scale.get(), self.RX_y_scale.get()]
+
+    def bar(self, value):
+        self.progress_bar['value'] = round(100*value/self.time_scale.get())
+        self.update_idletasks()

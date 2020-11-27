@@ -19,10 +19,10 @@ class View(tk.Tk):
 
         self.map_dim = [0, 0]
 
-        self.size_dialog = Editor.SizeDialog(self)
+        self.size_dialog        = Editor.SizeDialog(self)
         self.size_dialog.pack()
-        self.editor_window = Editor.Window(self)
-        self.simulation_window = Sim.Window(self)
+        self.editor_window      = Editor.Window(self)
+        self.simulation_window  = Sim.Window(self)
         self.simulation_window.withdraw()
 
         self.centerWindow()
@@ -60,7 +60,6 @@ class View(tk.Tk):
             self.destroy()
 
     def initSimulation(self, pos_list, color_list, tx_pos, rx_pos, x, y, z):
-        self.simulation_window.deiconify()
         self.simulation_window.initSimulation(pos_list, color_list, tx_pos, rx_pos, x, y, z)
 
     def initRadar(self, tx_x, tx_y, rx_x, rx_y):
@@ -73,11 +72,10 @@ class View(tk.Tk):
         self.simulation_window.clearSimulation()
 
     def centerWindow(self):
-        w = self.winfo_reqwidth()
-        h = self.winfo_reqheight()
-        ws = self.winfo_screenwidth()
-        hs = self.winfo_screenheight()
-        x = (ws / 2) - (w / 2)
-        y = (hs / 2) - (h / 2)
+        w   = self.winfo_reqwidth()
+        h   = self.winfo_reqheight()
+        ws  = self.winfo_screenwidth()
+        hs  = self.winfo_screenheight()
+        x   = (ws / 2) - (w / 2)
+        y   = (hs / 2) - (h / 2)
         self.geometry('+%d+%d' % (x, y))
-        self.update()
