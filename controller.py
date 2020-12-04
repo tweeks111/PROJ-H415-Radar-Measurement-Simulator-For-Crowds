@@ -10,31 +10,15 @@ import numpy as np
 class Controller:
     # Constructor
     def __init__(self):
-        self.colors = ['#F0F8FF', '#FAEBD7', '#00FFFF', '#7FFFD4', '#F0FFFF', '#F5F5DC', '#FFE4C4', '#000000',
-                       '#FFEBCD', '#0000FF', '#8A2BE2', '#A52A2A', '#DEB887', '#5F9EA0', '#7FFF00', '#D2691E',
-                       '#FF7F50', '#6495ED', '#FFF8DC', '#DC143C', '#00FFFF', '#00008B', '#008B8B', '#B8860B',
-                       '#A9A9A9', '#006400', '#A9A9A9', '#BDB76B', '#8B008B', '#556B2F', '#FF8C00', '#9932CC',
-                       '#8B0000', '#E9967A', '#8FBC8F', '#483D8B', '#2F4F4F', '#2F4F4F', '#00CED1', '#9400D3',
-                       '#FF1493', '#00BFFF', '#696969', '#696969', '#1E90FF', '#B22222', '#FFFAF0', '#228B22',
-                       '#FF00FF', '#DCDCDC', '#F8F8FF', '#FFD700', '#DAA520', '#808080', '#008000', '#ADFF2F',
-                       '#808080', '#F0FFF0', '#FF69B4', '#CD5C5C', '#4B0082', '#FFFFF0', '#F0E68C', '#E6E6FA',
-                       '#FFF0F5', '#7CFC00', '#FFFACD', '#ADD8E6', '#F08080', '#E0FFFF', '#FAFAD2', '#D3D3D3',
-                       '#90EE90', '#D3D3D3', '#FFB6C1', '#FFA07A', '#20B2AA', '#87CEFA', '#778899', '#778899',
-                       '#B0C4DE', '#FFFFE0', '#00FF00', '#32CD32', '#FAF0E6', '#FF00FF', '#800000', '#66CDAA',
-                       '#0000CD', '#BA55D3', '#9370DB', '#3CB371', '#7B68EE', '#00FA9A', '#48D1CC', '#C71585',
-                       '#191970', '#F5FFFA', '#FFE4E1', '#FFE4B5', '#FFDEAD', '#000080', '#FDF5E6', '#808000',
-                       '#6B8E23', '#FFA500', '#FF4500', '#DA70D6', '#EEE8AA', '#98FB98', '#AFEEEE', '#DB7093',
-                       '#FFEFD5', '#FFDAB9', '#CD853F', '#FFC0CB', '#DDA0DD', '#B0E0E6', '#800080', '#663399',
-                       '#FF0000', '#BC8F8F', '#4169E1', '#8B4513', '#FA8072', '#F4A460', '#2E8B57', '#FFF5EE',
-                       '#A0522D', '#C0C0C0', '#87CEEB', '#6A5ACD', '#708090', '#708090', '#FFFAFA', '#00FF7F',
-                       '#4682B4', '#D2B48C', '#008080', '#D8BFD8', '#FF6347', '#40E0D0', '#EE82EE', '#F5DEB3',
-                       '#FFFFFF', '#F5F5F5', '#FFFF00', '#9ACD32']
+        self.colors = ['#CF1020', '#FBC028', '#2863FB', '#FB6828', '#FF6F6F', '#EFFF9F', '#7FFFCF', '#CFFF8F',
+                       '#B56357', '#D8D8D6', '#2F5D8C', '#A0B3C1', '#EE1AB0', '#53555C', '#4DEAE6', '#BE95EA', '#A7EA9D']
 
         self.map_dim        = [0, 0]
         self.Ts             = 0.01
         self.tlist          = None
         self.all_pos_list   = []
         self.RDM_list       = []
+        self.dmap_list      = []
         self.rdm_time       = 0
         self.time_index     = 0
 
@@ -136,14 +120,15 @@ class Controller:
         if self.view.editor_window.left_panel.clusters_listbox.size() > 0:
             self.view.editor_window.right_panel.run_btn.configure(command=self.closeSimulation, text="Stop Simulation")
 
-            self.model.initSimulation()
+            N, M = int(self.view.editor_window.right_panel.n_scale.get()), int(self.view.editor_window.right_panel.n_scale.get())
+            self.model.initSimulation(N, M)
 
             pos_list            = self.model.getPointsPosition()
             color_list          = self.model.getPointsColor()
             tx_pos, rx_pos      = self.model.getRadarPosition()
-            x, y, z             = self.model.computeParameters()
+            x, y, z, dmap       = self.model.computeRDM()
 
-            self.view.initSimulation(pos_list, color_list, tx_pos, rx_pos, x, y, z)
+            self.view.initSimulation(pos_list, color_list, tx_pos, rx_pos, x, y, z, dmap)
             self.view.simulation_window.update()
 
             self.is_running     = True
@@ -151,15 +136,18 @@ class Controller:
 
             self.rdm_time       = round(1 / self.view.editor_window.right_panel.rdm_scale.get(), 2)
             duration            = self.view.editor_window.right_panel.time_scale.get()
-            self.view.simulation_window.setScaleLength(duration)
+            self.view.simulation_window.setScaleLength(duration-self.Ts)
             self.tlist          = np.arange(0, duration, self.Ts)
             self.RDM_list       = []
+            self.dmap_list      = []
             self.all_pos_list   = []
 
             for t in self.tlist:
                 self.all_pos_list.append(self.model.updatePointsPosition(self.Ts))
                 if ((t / self.rdm_time) % 1) == 0:
-                    self.RDM_list.append(self.model.computeParameters()[2])
+                    _, _, z, dmap = self.model.computeRDM()
+                    self.RDM_list.append(z)
+                    self.dmap_list.append(dmap)
                     # TODO : correct the problem of 0.99%0.33 = 1 and not 1 => delay
                 self.view.editor_window.right_panel.bar(t)
 
@@ -167,7 +155,7 @@ class Controller:
             self.time_index = 0
 
             self.view.updateSimulation(self.all_pos_list[0])
-            self.view.updateRDM(self.RDM_list[0])
+            self.view.updateRDM(self.RDM_list[0], self.dmap_list[0])
             self.view.simulation_window.update_idletasks()
 
             while self.is_running:
@@ -175,7 +163,6 @@ class Controller:
 
                     self.view.simulation_window.setScaleValue(self.time_index * self.Ts)
                     # TODO : correct fact that time is not equal to real time
-
 
                     self.displayAtTimeIndex()
 
@@ -190,6 +177,7 @@ class Controller:
 
     def closeSimulation(self):
         self.is_running = False
+        self.view.simulation_window.play_btn.configure(text="\u23F8")
         self.view.editor_window.right_panel.run_btn.configure(command=self.runSimulation, text="Run Simulation")
         self.view.editor_window.right_panel.bar(0)
         self.view.simulation_window.withdraw()
@@ -210,7 +198,7 @@ class Controller:
     def displayAtTimeIndex(self):
         self.view.updateSimulation(self.all_pos_list[self.time_index])
         rdm_index = math.floor((self.time_index*self.Ts) / self.rdm_time)
-        self.view.updateRDM(self.RDM_list[rdm_index])
+        self.view.updateRDM(self.RDM_list[rdm_index], self.dmap_list[rdm_index])
         time.sleep(self.Ts)
 
 # TODO : when closing some problem with the previous points and the display of the RDM occur

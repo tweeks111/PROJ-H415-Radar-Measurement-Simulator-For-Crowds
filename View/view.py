@@ -59,14 +59,14 @@ class View(tk.Tk):
         if messagebox.askokcancel("Quit", "Do you want to quit ?"):
             self.destroy()
 
-    def initSimulation(self, pos_list, color_list, tx_pos, rx_pos, x, y, z):
-        self.simulation_window.initSimulation(pos_list, color_list, tx_pos, rx_pos, x, y, z)
+    def initSimulation(self, pos_list, color_list, tx_pos, rx_pos, x, y, z, dmap):
+        self.simulation_window.initSimulation(pos_list, color_list, tx_pos, rx_pos, x, y, z, dmap)
 
     def initRadar(self, tx_x, tx_y, rx_x, rx_y):
         self.editor_window.initRadar(tx_x, tx_y, rx_x, rx_y)
 
-    def updateRDM(self, z):
-        self.simulation_window.plotRDM(z)
+    def updateRDM(self, z, detection_map):
+        self.simulation_window.plotRDM(z, detection_map)
 
     def clearSimulation(self):
         self.simulation_window.clearSimulation()

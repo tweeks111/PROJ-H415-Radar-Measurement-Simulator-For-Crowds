@@ -1,7 +1,6 @@
 from constants import *
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 import matplotlib.pyplot as plt
-from matplotlib import cm
 
 
 class Canvas(FigureCanvasTkAgg):
@@ -10,7 +9,11 @@ class Canvas(FigureCanvasTkAgg):
         self.ax = plt.axes()
         self.fig.set_facecolor("#f0f0f0")
         self.ax.set_aspect('equal', adjustable='box')
+        plt.gca().invert_yaxis()
         FigureCanvasTkAgg.__init__(self, self.fig, master=parent)
+
+        self.TX = None
+        self.RX = None
 
         self.background = None
 
@@ -37,10 +40,10 @@ class Canvas(FigureCanvasTkAgg):
         self.fig.canvas.draw()
 
     def initRadar(self, tx_pos, rx_pos):
-        TX = plt.Circle((tx_pos[0], tx_pos[1]), radius=RADAR_RADIUS, fill=True, color='red')
-        RX = plt.Circle((rx_pos[0], rx_pos[1]), radius=RADAR_RADIUS, fill=True, color='blue')
-        self.ax.add_patch(TX)
-        self.ax.add_patch(RX)
+        self.TX = plt.Circle((tx_pos[0], tx_pos[1]), radius=RADAR_RADIUS, fill=True, color='red')
+        self.RX = plt.Circle((rx_pos[0], rx_pos[1]), radius=RADAR_RADIUS, fill=True, color='blue')
+        self.ax.add_patch(self.TX)
+        self.ax.add_patch(self.RX)
         #plt.show()
         self.fig.canvas.draw()
         self.background = self.fig.canvas.copy_from_bbox(self.ax.bbox)
@@ -55,3 +58,6 @@ class Canvas(FigureCanvasTkAgg):
     def clearSimulation(self):
         for point in self.points:
             point.remove()
+        self.points.clear()
+        self.RX.remove()
+        self.TX.remove()

@@ -14,8 +14,8 @@ class Canvas(tk.Canvas):
         self.pixel_map_dim = [0, 0]
         self.pad = [0, 0]
 
-        self.colors = ["deep sky blue", "gold", "turquoise", "salmon", "cyan", "tomato", "aquamarine", "maroon", "sea green", "dark violet", "spring green", "olive drab", "khaki",
-                       'goldenrod', "peach puff", "MediumPurple1", "LemonChiffon2", "lavender"]
+        #self.colors = ["deep sky blue", "gold", "turquoise", "salmon", "cyan", "tomato", "aquamarine", "maroon", "sea green", "dark violet", "spring green", "olive drab", "khaki",
+        #               'goldenrod', "peach puff", "MediumPurple1", "LemonChiffon2", "lavender"]
         self.clusters_colors = []
         self.clusters_list = []
         self.arrows_list = []
@@ -49,19 +49,19 @@ class Canvas(tk.Canvas):
         self.update_idletasks()
 
     def initRadar(self, tx_pos, rx_pos):
-        self.TX = self.create_oval(self.pad[0] + (tx_pos[0]-RADAR_RADIUS) * self.PIXEL_PER_METER,
-                                   self.pad[1] + (tx_pos[1]-RADAR_RADIUS) * self.PIXEL_PER_METER,
-                                   self.pad[0] + (tx_pos[0]+RADAR_RADIUS) * self.PIXEL_PER_METER,
-                                   self.pad[1] + (tx_pos[1]+RADAR_RADIUS) * self.PIXEL_PER_METER,
+        self.TX = self.create_oval(self.pad[0] + tx_pos[0] * self.PIXEL_PER_METER - RADAR_RADIUS_PX,
+                                   self.pad[1] + tx_pos[1] * self.PIXEL_PER_METER - RADAR_RADIUS_PX,
+                                   self.pad[0] + tx_pos[0] * self.PIXEL_PER_METER + RADAR_RADIUS_PX,
+                                   self.pad[1] + tx_pos[1] * self.PIXEL_PER_METER + RADAR_RADIUS_PX,
                                    fill="red")
         # TODO : adjust size of the text with the size of the map
         self.TX_label = self.create_text(self.pad[0] + (tx_pos[0]) * self.PIXEL_PER_METER,
                                          self.pad[1] + (tx_pos[1]) * self.PIXEL_PER_METER,
                                          text="TX", fill="white")
-        self.RX = self.create_oval(self.pad[0] + (rx_pos[0] - RADAR_RADIUS) * self.PIXEL_PER_METER,
-                                   self.pad[1] + (rx_pos[1] - RADAR_RADIUS) * self.PIXEL_PER_METER,
-                                   self.pad[0] + (rx_pos[0] + RADAR_RADIUS) * self.PIXEL_PER_METER,
-                                   self.pad[1] + (rx_pos[1] + RADAR_RADIUS) * self.PIXEL_PER_METER,
+        self.RX = self.create_oval(self.pad[0] + rx_pos[0] * self.PIXEL_PER_METER - RADAR_RADIUS_PX,
+                                   self.pad[1] + rx_pos[1] * self.PIXEL_PER_METER - RADAR_RADIUS_PX,
+                                   self.pad[0] + rx_pos[0] * self.PIXEL_PER_METER + RADAR_RADIUS_PX,
+                                   self.pad[1] + rx_pos[1] * self.PIXEL_PER_METER + RADAR_RADIUS_PX,
                                    fill="blue")
         self.RX_label = self.create_text(self.pad[0] + (rx_pos[0]) * self.PIXEL_PER_METER,
                                          self.pad[1] + (rx_pos[1]) * self.PIXEL_PER_METER,
@@ -91,6 +91,7 @@ class Canvas(tk.Canvas):
         self.delete(self.arrows_list[index])
         del self.clusters_list[index]
         del self.arrows_list[index]
+        del self.clusters_colors[index]
         self.update_idletasks()
 
     def selectCluster(self, index):
@@ -121,15 +122,15 @@ class Canvas(tk.Canvas):
 
     def updateRadarSettings(self, tx_x, tx_y, rx_x, rx_y):
         self.coords(self.TX,
-                    self.pad[0] + (tx_x-RADAR_RADIUS)*self.PIXEL_PER_METER,
-                    self.pad[1] + (tx_y-RADAR_RADIUS)*self.PIXEL_PER_METER,
-                    self.pad[0] + (tx_x+RADAR_RADIUS)*self.PIXEL_PER_METER,
-                    self.pad[1] + (tx_y+RADAR_RADIUS)*self.PIXEL_PER_METER)
+                    self.pad[0] + tx_x*self.PIXEL_PER_METER - RADAR_RADIUS_PX,
+                    self.pad[1] + tx_y*self.PIXEL_PER_METER - RADAR_RADIUS_PX,
+                    self.pad[0] + tx_x*self.PIXEL_PER_METER + RADAR_RADIUS_PX,
+                    self.pad[1] + tx_y*self.PIXEL_PER_METER + RADAR_RADIUS_PX)
         self.coords(self.RX,
-                    self.pad[0] + (rx_x - RADAR_RADIUS) * self.PIXEL_PER_METER,
-                    self.pad[1] + (rx_y - RADAR_RADIUS) * self.PIXEL_PER_METER,
-                    self.pad[0] + (rx_x + RADAR_RADIUS) * self.PIXEL_PER_METER,
-                    self.pad[1] + (rx_y + RADAR_RADIUS) * self.PIXEL_PER_METER)
+                    self.pad[0] + rx_x * self.PIXEL_PER_METER - RADAR_RADIUS_PX,
+                    self.pad[1] + rx_y * self.PIXEL_PER_METER - RADAR_RADIUS_PX,
+                    self.pad[0] + rx_x * self.PIXEL_PER_METER + RADAR_RADIUS_PX,
+                    self.pad[1] + rx_y * self.PIXEL_PER_METER + RADAR_RADIUS_PX)
         self.coords(self.TX_label,
                     self.pad[0] + tx_x * self.PIXEL_PER_METER,
                     self.pad[1] + tx_y * self.PIXEL_PER_METER)

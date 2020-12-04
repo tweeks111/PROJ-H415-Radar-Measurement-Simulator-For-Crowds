@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter.ttk import Progressbar
-from constants import *
 
 
 class RightPanel(tk.Frame):
@@ -48,6 +47,16 @@ class RightPanel(tk.Frame):
         self.rdm_scale = tk.Scale(self.sim_frame, from_=1, to=4, orient=tk.HORIZONTAL, resolution=1)
         self.rdm_scale.grid(row=1, column=2)
         self.rdm_scale.set(2)
+        M_label = tk.Label(self.sim_frame, text="M :")
+        M_label.grid(row=2, column=0)
+        self.m_scale = tk.Scale(self.sim_frame, from_=16, to=128, orient=tk.HORIZONTAL, resolution=16)
+        self.m_scale.grid(row=2, column=2)
+        self.m_scale.set(64)
+        N_label = tk.Label(self.sim_frame, text="N :")
+        N_label.grid(row=3, column=0)
+        self.n_scale = tk.Scale(self.sim_frame, from_=16, to=128, orient=tk.HORIZONTAL, resolution=16)
+        self.n_scale.grid(row=3, column=2)
+        self.n_scale.set(64)
 
         self.progress_bar = Progressbar(self, orient=tk.HORIZONTAL, mode='determinate')
         self.progress_bar.pack(fill=tk.BOTH)
@@ -63,9 +72,9 @@ class RightPanel(tk.Frame):
         self.RX_x_scale.configure(from_=0, to=map_dim[0])
         self.RX_y_scale.configure(from_=0, to=map_dim[1])
 
-        self.TX_x_scale.set(0.2*map_dim[0])
+        self.TX_x_scale.set(map_dim[0]/2-0.5)
         self.TX_y_scale.set(map_dim[1])
-        self.RX_x_scale.set(0.8*map_dim[0])
+        self.RX_x_scale.set(map_dim[0]/2+0.5)
         self.RX_y_scale.set(map_dim[1])
 
     def getRadarSettings(self):

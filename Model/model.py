@@ -2,9 +2,19 @@ from Model.cluster import Cluster
 from Model.person import Person
 import numpy as np
 import scipy.stats
+from scipy.signal import find_peaks
 from cmath import *
 import math
 from constants import *
+
+f_c = 5e9  # Carrier frequency
+BW = 80e6  # Bandwidth
+Q = 1024  # Number of OFDM carriers
+L = 64  # Number of taps in the channel, corresponding to a duration of L*Delta_tau
+N_a = 4  # Number of antennas at the receiver
+d_ant = 0.06  # Distance between each antenna
+kappa = 0  # Number of unknown data OFDM
+Delta_t = 16e-6
 
 P_TX = 1  # Power of the transmitter
 G_TX = 1  # Gain of the transmitter
@@ -13,36 +23,20 @@ L_TX = 1  # Losses at the transmitting side
 L_RX = 1  # Losses at the receiving sid
 N0_dBm = -174  # PSD of noise [dBm/Hz]
 N0 = 10 ** (N0_dBm / 10 - 3)  # PSD of noise [W/Hz]
-
-f_c = 5e9  # Carrier frequency
-BW = 80e6  # Bandwidth
-Q = 1024  # Number of OFDM carriers
-L = 64  # Number of taps in the channel, corresponding to a duration of L*Delta_tau
-M = 32  # Number of OFDM symbols used for averaging in channel estimation
-N = 64  # Number of channel estimations to obtain one RDM
-N_a = 4  # Number of antennas at the receiver
-d_ant = 0.06  # Distance between each antenna
-kappa = 0  # Number of unknown data OFDM
+P_noise = N0 * BW
 
 lambda_c = C / f_c  # Wavelength
 Ts = 1 / BW  # Sampling time   (Delta_tau) -> fast time interval  (index i)
 T = (kappa + 1) * (Q + L) * Ts  # Time between the reception of two symbols  (Delta_t) -> slow time interval (index k)
 
+threshold = -90
 """
 i in range(Q) -> fast time index, there is Q samples for the signal as theres is Q Symbols  -> i*Ts
 k in range(N.M) -> slow time index, 
 l in range(N_a) -> antenna index
 """
 
-Delta_t = 16e-6
-# Resolution
-d_res = C / (2 * BW)
-f_res = 1 / (N * M * Delta_t)
-v_res = lambda_c / (2 * N * M * Delta_t)
-T_dwell = N * M * Delta_t
-alpha_res = 3
-P_noise = N0 * BW
-bin_i = np.arange(0, Q * Ts, Ts)
+bin_i = np.arange(-Ts/2, (Q+1/2) * Ts, Ts)
 
 
 def poissonPointProcess(cluster):
@@ -63,18 +57,29 @@ def poissonPointProcess(cluster):
 class Model:
     # Constructor
     def __init__(self):
-        self.map_dim = [0, 0]
-        self.clusters_list = []
-        self.points = []
-        self.tx_pos = [0, 0]
-        self.rx_pos = [0, 0]
-        self.d = 0
-        self.lambda_c = 0
+        self.map_dim        = [0, 0]
+        self.clusters_list  = []
+        self.points         = []
+        self.tx_pos         = [0, 0]
+        self.rx_pos         = [0, 0]
+        self.d              = 0
+        self.lambda_c       = 0
 
+        self.M              = 64  # Number of OFDM symbols used for averaging in channel estimation
+        self.N              = 64  # Number of channel estimations to obtain one RDM
+
+        self.d_res          = 0
+        self.f_res          = 0
+        self.v_res          = 0
+        self.T_dwell        = 0
+        self.alpha_res      = 0
+
+        self.d_smaller_d_res = False
     # -- Points Function --
 
-    def initSimulation(self):
+    def initSimulation(self, N, M):
         self.points.clear()
+        self.computeResolutionParameters(N, M)
 
         for cluster in self.clusters_list:
             temp_pos_list = poissonPointProcess(cluster)
@@ -84,7 +89,11 @@ class Model:
             for i in range(0, temp_pos_list.shape[1]):
                 self.points.append(Person(temp_pos_list[0, i], temp_pos_list[1, i], v, theta, lambda_c, color))
 
-        self.d = sqrt((self.tx_pos[0] - self.rx_pos[0]) ** 2 + (self.tx_pos[1] - self.rx_pos[1]) ** 2)
+        self.d = math.sqrt((self.tx_pos[0] - self.rx_pos[0]) ** 2 + (self.tx_pos[1] - self.rx_pos[1]) ** 2)
+        if self.d < self.d_res:
+            self.d_smaller_d_res = True
+        else :
+            self.d_smaller_d_res = False
 
     def updatePointsPosition(self, time):
         pos_list = []
@@ -101,61 +110,71 @@ class Model:
 
     # -- RDM Computation --
 
-    def computeParameters(self):
-        d_tx = np.zeros(len(self.points), dtype=float)
-        d_rx = np.zeros(len(self.points), dtype=float)
-        DoA = np.zeros(len(self.points), dtype=float)
-        f_d = np.zeros(len(self.points), dtype=float)
-        tau_n = np.zeros(len(self.points), dtype=float)
-        idx = np.zeros(len(self.points), dtype=int)
-        P_RXn = np.zeros(len(self.points), dtype=float)
+    def computeResolutionParameters(self, N, M):
+        self.N = N
+        self.M = M
+        self.d_res = C / (2 * BW)
+        self.f_res = 1 / (N * M * Delta_t)
+        self.v_res = lambda_c / (2 * N * M * Delta_t)
+        self.T_dwell = N * M * Delta_t
+        self.alpha_res = 3
+
+    def computeRDM(self):
+        d_tx    = np.zeros(len(self.points), dtype=float)
+        d_rx    = np.zeros(len(self.points), dtype=float)
+        DoA     = np.zeros(len(self.points), dtype=float)
+        f_d     = np.zeros(len(self.points), dtype=float)
+        tau_n   = np.zeros(len(self.points), dtype=float)
+        idx     = np.zeros(len(self.points), dtype=int)
+        P_RXn   = np.zeros(len(self.points), dtype=float)
 
         for point in range(len(self.points)):
-            d_tx[point], d_rx[point], DoA[point], f_d[point] = self.points[point].computeParameters(self.tx_pos,
-                                                                                                    self.rx_pos)
-            tau_n[point] = (d_tx[point] + d_rx[point]) / C
-            idx[point] = (np.searchsorted(bin_i, tau_n[point], side='right') - 1)
-            P_RXn[point] = (P_TX * G_TX * G_RX * (lambda_c / (d_tx[point] * d_rx[point])) ** 2) / (
-                        L_RX * L_TX * (4 * pi) ** 3)
+            d_tx[point], d_rx[point], DoA[point], f_d[point] = self.points[point].computeParameters(self.tx_pos, self.rx_pos)
+            tau_n[point]    = (d_tx[point] + d_rx[point]) / C
+            idx[point]      = (np.searchsorted(bin_i, tau_n[point], side='right') - 1)
+            #idx[point]      = round(tau_n[point]/Ts)
+            P_RXn[point]    = (P_TX * G_TX * G_RX * (lambda_c / (d_tx[point] * d_rx[point])) ** 2) / (L_RX * L_TX * (4 * pi) ** 3)
 
-        h = np.zeros((Q, N * M, N_a), dtype=complex)  # range slow-time map
-        n = np.zeros((Q, N * M, N_a), dtype=complex)
+        h = np.zeros((Q, self.N * self.M, N_a), dtype=complex)  # range slow-time map
 
         for point in range(len(self.points)):
             i = idx[point]
             for l in range(N_a):
-                for k in range(N * M):
+                for k in range(self.N * self.M):
                     h[i, k, l] = h[i, k, l] + sqrt(P_RXn[point]) \
                                  * exp(-1j * 2 * pi * f_c * tau_n[point]) \
                                  * exp(1j * 2 * pi * k * f_d[point] * T) \
                                  * exp(1j * 2 * pi * l * (d_ant / lambda_c) * sin(DoA[point]))
 
-        n1 = np.random.normal(0, 1, (Q, M * N, N_a)) * sqrt(P_noise / 2)
-        n2 = np.random.normal(0, 1, (Q, M * N, N_a)) * sqrt(P_noise / 2)
+        n1 = np.random.normal(0, 1, (Q, self.M * self.N, N_a)) * sqrt(P_noise / 2)
+        n2 = np.random.normal(0, 1, (Q, self.M * self.N, N_a)) * sqrt(P_noise / 2)
         h2 = h + n1 + n2 * 1j
 
-        h3 = np.reshape(h2, (Q, M, N, N_a))
+        h3 = np.reshape(h2, (Q, self.M, self.N, N_a))
         h_avg = np.squeeze(np.mean(h3, axis=2))
 
-        RDC = np.fft.fftshift(np.fft.fft(h_avg, n=N, axis=1), axes=1)
+        blackman2D = np.tile(np.blackman(self.N), (Q, 1))
+        blackman3D = np.repeat(np.expand_dims(blackman2D, axis=2), repeats=N_a, axis=2)
 
-        x = np.arange(-N / 4 * v_res, N / 4 * v_res, v_res)
-        y = np.arange(0, 30 * d_res, d_res)
-        z = 20 * np.log10(np.abs(RDC[0:30, int(N / 4):int(3 * N / 4), 0]))
-        """
-        fig = plt.figure()
-        # ax = fig.gca(projection='3d')
-        z = np.abs(H[0:10, :, 1])
-        # X, Y = np.meshgrid(x, np.arange(0, 50*d_res, d_res))
-        # surf = ax.plot_surface(X, Y, absH, cmap=cm.coolwarm,
-        #                linewidth=0, antialiased=False)
-        #z_min, z_max = -z.max(), z.min()
-        pc = plt.pcolormesh(x, y, z, cmap='jet', shading='auto')#, vmin=z_min, vmax=z_max)
-        fig.colorbar(pc)
-        plt.show()
-        """
+        h_wdw = np.multiply(h_avg, blackman3D)
+        RDC     = np.abs(np.fft.fftshift(np.fft.fft(h_wdw, n=self.N, axis=1), axes=1))
 
-        return x, y, z
+        x = np.arange(-int(self.N/4) * self.v_res, int(self.N/4) * self.v_res, self.v_res)
+        y = np.arange(0, 16 * self.d_res, self.d_res)
+        z = 20 * np.log10(RDC[0:16, int(self.N/4):3*int(self.N/4), 0])
+
+        detection_map = self.detectionMap(z)
+
+        return x, y, z, detection_map
+
+    def detectionMap(self, RDC):
+        detection_map = np.zeros(RDC.shape)
+
+        for i in range(RDC.shape[0]):
+            idx, _ = find_peaks(RDC[i, :], height=threshold)
+            for j in range(len(idx)):
+                detection_map[i, idx[j]] = 1
+        return detection_map
 
     # -- Cluster Functions --
 

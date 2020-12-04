@@ -2,6 +2,7 @@ import math
 
 # Static Methods
 
+
 def lineLength(line):
     return math.sqrt((line[1][0] - line[0][0]) ** 2 + (line[1][1] - line[0][1]) ** 2)
 
@@ -72,7 +73,9 @@ class Person:
 
         doppler_freq = 2*self.speed*math.cos(theta)*math.cos(xi/2)/self.wavelength
 
-        return d_tx, d_rx, xi/2, doppler_freq
+        DoA = vectAngle(vect_RX_point, [0, 1])
+
+        return d_tx, d_rx, DoA, doppler_freq
 
     # Get Functions
     def getX(self):
