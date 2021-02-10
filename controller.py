@@ -126,9 +126,9 @@ class Controller:
             pos_list            = self.model.getPointsPosition()
             color_list          = self.model.getPointsColor()
             tx_pos, rx_pos      = self.model.getRadarPosition()
-            x, y, z, dmap       = self.model.computeRDM()
+            x, y, z, dmap, AoA  = self.model.computeRDM()
 
-            self.view.initSimulation(pos_list, color_list, tx_pos, rx_pos, x, y, z, dmap)
+            self.view.initSimulation(pos_list, color_list, tx_pos, rx_pos, x, y, z, dmap, AoA)
             self.view.simulation_window.update()
 
             self.is_running     = True
@@ -140,14 +140,16 @@ class Controller:
             self.tlist          = np.arange(0, duration, self.Ts)
             self.RDM_list       = []
             self.dmap_list      = []
+            self.AoA_list       = []
             self.all_pos_list   = []
 
             for t in self.tlist:
                 self.all_pos_list.append(self.model.updatePointsPosition(self.Ts))
                 if ((t / self.rdm_time) % 1) == 0:
-                    _, _, z, dmap = self.model.computeRDM()
+                    _, _, z, dmap, AoA = self.model.computeRDM()
                     self.RDM_list.append(z)
                     self.dmap_list.append(dmap)
+                    self.AoA_list.append(AoA)
                     # TODO : correct the problem of 0.99%0.33 = 1 and not 1 => delay
                 self.view.editor_window.right_panel.bar(t)
 
@@ -155,7 +157,7 @@ class Controller:
             self.time_index = 0
 
             self.view.updateSimulation(self.all_pos_list[0])
-            self.view.updateRDM(self.RDM_list[0], self.dmap_list[0])
+            self.view.updateRDM(self.RDM_list[0], self.dmap_list[0], self.AoA_list[0])
             self.view.simulation_window.update_idletasks()
 
             while self.is_running:
@@ -198,7 +200,7 @@ class Controller:
     def displayAtTimeIndex(self):
         self.view.updateSimulation(self.all_pos_list[self.time_index])
         rdm_index = math.floor((self.time_index*self.Ts) / self.rdm_time)
-        self.view.updateRDM(self.RDM_list[rdm_index], self.dmap_list[rdm_index])
+        self.view.updateRDM(self.RDM_list[rdm_index], self.dmap_list[rdm_index], self.AoA_list[rdm_index])
         time.sleep(self.Ts)
 
 # TODO : when closing some problem with the previous points and the display of the RDM occur

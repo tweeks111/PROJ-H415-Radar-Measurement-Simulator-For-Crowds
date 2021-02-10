@@ -54,7 +54,6 @@ class Canvas(tk.Canvas):
                                    self.pad[0] + tx_pos[0] * self.PIXEL_PER_METER + RADAR_RADIUS_PX,
                                    self.pad[1] + tx_pos[1] * self.PIXEL_PER_METER + RADAR_RADIUS_PX,
                                    fill="red")
-        # TODO : adjust size of the text with the size of the map
         self.TX_label = self.create_text(self.pad[0] + (tx_pos[0]) * self.PIXEL_PER_METER,
                                          self.pad[1] + (tx_pos[1]) * self.PIXEL_PER_METER,
                                          text="TX", fill="white")

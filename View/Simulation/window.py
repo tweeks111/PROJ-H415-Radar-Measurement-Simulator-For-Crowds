@@ -28,11 +28,11 @@ class Window(tk.Toplevel):
         self.rdm_canvas     = View.Simulation.RDMCanvas(self.right_frame)
         self.rdm_canvas.get_tk_widget().pack(side=tk.LEFT)
 
-    def initSimulation(self, pos_list, color_list, tx_pos, rx_pos, x, y, z, dmap):
+    def initSimulation(self, pos_list, color_list, tx_pos, rx_pos, x, y, z, dmap, AoA):
         self.canvas.drawMap()
         self.initRadar(tx_pos, rx_pos)
         self.canvas.initPoints(pos_list, color_list)
-        self.rdm_canvas.initRDM(x, y, z, dmap)
+        self.rdm_canvas.initRDM(x, y, z, dmap, AoA)
         
     def updateSimulation(self, pos_list):
         self.canvas.updatePoints(pos_list)
@@ -48,8 +48,8 @@ class Window(tk.Toplevel):
         self.canvas.clearSimulation()
         self.rdm_canvas.clearRDM()
 
-    def plotRDM(self, z, dmap):
-        self.rdm_canvas.updateRDM(z, dmap)
+    def plotRDM(self, z, dmap, AoA):
+        self.rdm_canvas.updateRDM(z, dmap, AoA)
 
     # -- Set Functions -- #
 

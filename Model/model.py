@@ -6,6 +6,7 @@ from scipy.signal import find_peaks
 from cmath import *
 import math
 from constants import *
+import matplotlib.pyplot as plt
 
 f_c = 5e9  # Carrier frequency
 BW = 80e6  # Bandwidth
@@ -157,24 +158,58 @@ class Model:
         blackman3D = np.repeat(np.expand_dims(blackman2D, axis=2), repeats=N_a, axis=2)
 
         h_wdw = np.multiply(h_avg, blackman3D)
-        RDC     = np.abs(np.fft.fftshift(np.fft.fft(h_wdw, n=self.N, axis=1), axes=1))
+        RDC   = np.fft.fftshift(np.fft.fft(h_wdw, n=self.N, axis=1), axes=1)
+        RDC_reshape = RDC[0:16, int(self.N/4):3*int(self.N/4), :]
 
         x = np.arange(-int(self.N/4) * self.v_res, int(self.N/4) * self.v_res, self.v_res)
         y = np.arange(0, 16 * self.d_res, self.d_res)
-        z = 20 * np.log10(RDC[0:16, int(self.N/4):3*int(self.N/4), 0])
+        z = 20 * np.log10(np.abs(RDC_reshape[:, :, 0]))
 
-        detection_map = self.detectionMap(z)
+        detection_map, idx_list = self.detectionMap(z)
+        h_r = np.zeros((len(idx_list), N_a), dtype=complex)
 
-        return x, y, z, detection_map
+        for i in range(len(idx_list)):
+            for j in range(N_a):
+                h_r[i, j] = RDC_reshape[idx_list[i][0], idx_list[i][1], j]
+        print(h_r.size)
+        AoA = 10 * np.log10(np.abs(self.musicAoa(np.array(h_r[0, :])[np.newaxis])))
+
+        return x, y, z, detection_map, AoA
 
     def detectionMap(self, RDC):
         detection_map = np.zeros(RDC.shape)
-
+        idx_list = []
         for i in range(RDC.shape[0]):
             idx, _ = find_peaks(RDC[i, :], height=threshold)
             for j in range(len(idx)):
                 detection_map[i, idx[j]] = 1
-        return detection_map
+                idx_list.append([i, idx[j]])
+        return detection_map, idx_list
+
+    def musicAoa(self, h_r):
+        h_r = np.transpose(h_r)
+        for j in range(h_r.shape[0]):
+            R = np.dot(h_r, np.transpose(h_r))
+            [D, V] = np.linalg.eigh(R)  # eigenvalue decomposition of R. V = eigenvectors, D = eigenvalues
+            I = np.argsort(-np.abs(D))
+            D = -np.sort(-np.abs(D))
+
+            V = V[:, I]
+            Us = V[:, 0]
+            Un = V[:, 1:]
+            G = np.dot(Un, np.transpose(Un))
+            angles = np.arange(-90, 90.05, 0.05)
+            # Check multiplication of vector
+            s = np.sin(angles * pi / 180)
+            v = np.exp(1j * 2 * pi * f_c / 3e8 * d_ant * np.dot(np.arange(N_a).reshape(N_a, 1), s.reshape(1, s.size)))
+
+            music_spectrum = np.zeros(angles.size, dtype=complex)
+            for k in range(angles.size):
+                music_spectrum[k] = 1 / np.vdot(np.dot(v[:, k], G), v[:, k])
+
+            music_spectrum = music_spectrum / np.max(abs(music_spectrum))
+            return music_spectrum
+
 
     # -- Cluster Functions --
 
