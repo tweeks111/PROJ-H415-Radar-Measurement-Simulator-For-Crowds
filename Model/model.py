@@ -168,13 +168,13 @@ class Model:
         detection_map, idx_list = self.detectionMap(z)
         h_r = np.zeros((len(idx_list), N_a), dtype=complex)
 
+        AoA_list = []
         for i in range(len(idx_list)):
             for j in range(N_a):
                 h_r[i, j] = RDC_reshape[idx_list[i][0], idx_list[i][1], j]
-        print(h_r.size)
-        AoA = 10 * np.log10(np.abs(self.musicAoa(np.array(h_r[0, :])[np.newaxis])))
+            AoA_list.append(10 * np.log10(np.abs(self.musicAoa(np.array(h_r[i, :])[np.newaxis]))))
 
-        return x, y, z, detection_map, AoA
+        return x, y, z, detection_map, AoA_list
 
     def detectionMap(self, RDC):
         detection_map = np.zeros(RDC.shape)
@@ -188,27 +188,27 @@ class Model:
 
     def musicAoa(self, h_r):
         h_r = np.transpose(h_r)
-        for j in range(h_r.shape[0]):
-            R = np.dot(h_r, np.transpose(h_r))
-            [D, V] = np.linalg.eigh(R)  # eigenvalue decomposition of R. V = eigenvectors, D = eigenvalues
-            I = np.argsort(-np.abs(D))
-            D = -np.sort(-np.abs(D))
 
-            V = V[:, I]
-            Us = V[:, 0]
-            Un = V[:, 1:]
-            G = np.dot(Un, np.transpose(Un))
-            angles = np.arange(-90, 90.05, 0.05)
-            # Check multiplication of vector
-            s = np.sin(angles * pi / 180)
-            v = np.exp(1j * 2 * pi * f_c / 3e8 * d_ant * np.dot(np.arange(N_a).reshape(N_a, 1), s.reshape(1, s.size)))
+        R = np.dot(h_r, np.transpose(h_r))
+        [D, V] = np.linalg.eigh(R)  # eigenvalue decomposition of R. V = eigenvectors, D = eigenvalues
+        I = np.argsort(-np.abs(D))
+        D = -np.sort(-np.abs(D))
 
-            music_spectrum = np.zeros(angles.size, dtype=complex)
-            for k in range(angles.size):
-                music_spectrum[k] = 1 / np.vdot(np.dot(v[:, k], G), v[:, k])
+        V = V[:, I]
+        Us = V[:, 0]
+        Un = V[:, 1:]
+        G = np.dot(Un, np.transpose(Un))
+        angles = np.arange(-90, 90.05, 0.05)
+        # Check multiplication of vector
+        s = np.sin(angles * pi / 180)
+        v = np.exp(1j * 2 * pi * f_c / 3e8 * d_ant * np.dot(np.arange(N_a).reshape(N_a, 1), s.reshape(1, s.size)))
 
-            music_spectrum = music_spectrum / np.max(abs(music_spectrum))
-            return music_spectrum
+        music_spectrum = np.zeros(angles.size, dtype=complex)
+        for k in range(angles.size):
+            music_spectrum[k] = 1 / np.vdot(np.dot(v[:, k], G), v[:, k])
+
+        music_spectrum = music_spectrum / np.max(abs(music_spectrum))
+        return music_spectrum
 
 
     # -- Cluster Functions --
