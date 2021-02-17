@@ -173,6 +173,7 @@ class Model:
             for j in range(N_a):
                 h_r[i, j] = RDC_reshape[idx_list[i][0], idx_list[i][1], j]
             AoA_list.append(10 * np.log10(np.abs(self.musicAoa(np.array(h_r[i, :])[np.newaxis]))))
+            #AoA_list.append(10 * np.log10(np.abs(self.musicAoa(h_r[i, :]))))
 
         return x, y, z, detection_map, AoA_list
 
@@ -190,7 +191,7 @@ class Model:
         h_r = np.transpose(h_r)
 
         R = np.dot(h_r, np.transpose(h_r))
-        [D, V] = np.linalg.eigh(R)  # eigenvalue decomposition of R. V = eigenvectors, D = eigenvalues
+        [D, V] = np.linalg.eig(R)  # eigenvalue decomposition of R. V = eigenvectors, D = eigenvalues
         I = np.argsort(-np.abs(D))
         D = -np.sort(-np.abs(D))
 
@@ -205,7 +206,7 @@ class Model:
 
         music_spectrum = np.zeros(angles.size, dtype=complex)
         for k in range(angles.size):
-            music_spectrum[k] = 1 / np.vdot(np.dot(v[:, k], G), v[:, k])
+            music_spectrum[k] = 1 / np.dot(np.dot(v[:, k], G), v[:, k])
 
         music_spectrum = music_spectrum / np.max(abs(music_spectrum))
         return music_spectrum

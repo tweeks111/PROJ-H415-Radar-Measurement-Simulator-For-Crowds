@@ -14,7 +14,7 @@ class Canvas(FigureCanvasTkAgg):
 
         self.TX = None
         self.RX = None
-
+        self.rect = None
         self.background = None
 
         self.map_dim    = [0, 0]
@@ -26,8 +26,8 @@ class Canvas(FigureCanvasTkAgg):
         plt.grid()
 
     def drawMap(self):
-        rect = plt.Rectangle((0, 0), self.map_dim[0], self.map_dim[1], fill=False, color='Red')
-        self.ax.add_patch(rect)
+        self.rect = plt.Rectangle((0, 0), self.map_dim[0], self.map_dim[1], fill=False, color='Red')
+        self.ax.add_patch(self.rect)
         self.fig.canvas.draw()
 
     def initPoints(self, pos, color):
@@ -59,5 +59,6 @@ class Canvas(FigureCanvasTkAgg):
         for point in self.points:
             point.remove()
         self.points.clear()
+        self.rect.remove()
         self.RX.remove()
         self.TX.remove()

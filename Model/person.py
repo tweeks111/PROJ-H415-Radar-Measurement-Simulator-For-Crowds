@@ -34,7 +34,10 @@ def vectAngle(vect1, vect2):
     norm_vect2 = (vect2[0]/len_vect2, vect2[1]/len_vect2)
 
     dot_product = norm_vect1[0]*norm_vect2[0] + norm_vect1[1]*norm_vect2[1]
-
+    if dot_product > 1:
+        dot_product = 1
+    elif dot_product < -1:
+        dot_product = -1
     return math.acos(dot_product)
 
 
