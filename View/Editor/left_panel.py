@@ -16,7 +16,7 @@ class LeftPanel(tk.Frame):
         self.cluster_frame.configure(padx=5, pady=5)
         self.cluster_frame.pack()
         yScroll = tk.Scrollbar(self.cluster_frame, orient=tk.VERTICAL)
-        self.clusters_listbox = tk.Listbox(self.cluster_frame, yscrollcommand=yScroll.set, activestyle='none', selectbackground="red")
+        self.clusters_listbox = tk.Listbox(self.cluster_frame, yscrollcommand=yScroll.set, activestyle='none', selectbackground="red", exportselection=False)
         self.clusters_listbox.grid(row=1, column=0, sticky='nsew')
         yScroll.grid(row=1, column=1, sticky='ns')
         yScroll['command'] = self.clusters_listbox.yview()
@@ -108,7 +108,6 @@ class LeftPanel(tk.Frame):
 
     def getRadarSettings(self):
         return [self.TX_x_scale.get(), self.TX_y_scale.get(), self.RX_x_scale.get(), self.RX_y_scale.get()]
-
 
     def removeCluster(self):
         selected_index = self.clusters_listbox.curselection()

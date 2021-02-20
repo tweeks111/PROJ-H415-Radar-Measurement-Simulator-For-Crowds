@@ -79,6 +79,6 @@ class View(tk.Tk):
         h   = self.winfo_reqheight()
         ws  = self.winfo_screenwidth()
         hs  = self.winfo_screenheight()
-        x   = (ws / 2) - (w / 2)
-        y   = (hs / 2) - (h / 2)
+        x   = (ws / 4) - (w / 2)
+        y   = (hs / 4) - (h / 2)
         self.geometry('+%d+%d' % (x, y))

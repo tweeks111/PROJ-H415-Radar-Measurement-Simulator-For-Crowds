@@ -23,6 +23,7 @@ class Controller:
         self.dmap_list      = []
         self.rdm_time       = 0
         self.time_index     = 0
+        self.detectionMode = "Threshold"
 
         self.view = View()
         self.model = Model()
@@ -85,13 +86,13 @@ class Controller:
         self.view.editor_window.left_panel.v_scale.configure(command=self.updateClusterSettings)
         self.view.editor_window.left_panel.angle_scale.configure(command=self.updateClusterSettings)
         self.view.editor_window.left_panel.lambda_scale.configure(command=self.updateClusterSettings)
-        self.view.editor_window.right_panel.run_btn.configure(command=self.runSimulation)
         self.view.editor_window.left_panel.point_btn.configure(command=self.checkBtn)
-
         self.view.editor_window.left_panel.TX_x_scale.configure(command=self.updateRadarSettings)
         self.view.editor_window.left_panel.TX_y_scale.configure(command=self.updateRadarSettings)
         self.view.editor_window.left_panel.RX_x_scale.configure(command=self.updateRadarSettings)
         self.view.editor_window.left_panel.RX_y_scale.configure(command=self.updateRadarSettings)
+
+        self.view.editor_window.right_panel.run_btn.configure(command=self.runSimulation)
 
     def configureSimulationWindow(self):
         self.view.simulation_window.play_btn.configure(command=self.pauseSimulation)
@@ -135,7 +136,12 @@ class Controller:
             self.view.editor_window.right_panel.analysis_btn['state'] = 'disabled'
 
             N, M = int(self.view.editor_window.right_panel.n_scale.get()), int(self.view.editor_window.right_panel.n_scale.get())
-            self.model.initSimulation(N, M, self.view.editor_window.right_panel.detect_thresh.get(), self.view.editor_window.right_panel.aoa_thresh.get())
+            pfa = self.view.editor_window.right_panel.proba_scale.get()
+            Ncfar = self.view.editor_window.right_panel.NCFAR_scale.get()
+            guard = self.view.editor_window.right_panel.guard_scale.get()
+            kcfar = self.view.editor_window.right_panel.kCFAR_scale.get()
+            detectionMode = self.view.editor_window.right_panel.combo_detect.get()
+            self.model.initSimulation(N, M, self.view.editor_window.right_panel.detect_thresh.get(), pfa, kcfar, Ncfar, guard, self.view.editor_window.right_panel.aoa_thresh.get(), detectionMode)
 
             pos_list                = self.model.getPointsPosition()
             color_list              = self.model.getPointsColor()

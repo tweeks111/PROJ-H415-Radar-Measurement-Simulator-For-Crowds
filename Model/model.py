@@ -68,6 +68,10 @@ class Model:
         self.M              = 64  # Number of OFDM symbols used for averaging in channel estimation
         self.N              = 64  # Number of channel estimations to obtain one RDM
         self.thresh_detection = -90
+        self.pfa            = 0
+        self.kcfar          = 0
+        self.ncfar          = 0
+        self.guard          = 0
         self.thresh_angle = -6
 
         self.d_res          = 0
@@ -76,13 +80,19 @@ class Model:
         self.T_dwell        = 0
         self.alpha_res      = 0
 
+        self.detectionMode = "Threshold"
         self.d_smaller_d_res = False
     # -- Points Function --
 
-    def initSimulation(self, N, M, thresh_detection, thresh_angle):
+    def initSimulation(self, N, M, thresh_detection, pfa, kcfar, ncfar, guard, thresh_angle, detectionMode):
         self.points.clear()
         self.N = N
         self.M = M
+        self.detectionMode = detectionMode
+        self.pfa = pfa
+        self.kcfar = kcfar
+        self.guard = guard
+        self.ncfar = ncfar
         self.computeResolutionParameters()
         self.thresh_detection = thresh_detection
         self.thresh_angle = thresh_angle
@@ -159,15 +169,26 @@ class Model:
 
         h_wdw = np.multiply(h_avg, blackman3D)
         RDC   = np.fft.fftshift(np.fft.fft(h_wdw, n=self.N, axis=1), axes=1)
-        RDC_reshape = RDC[0:16, int(self.N/4):3*int(self.N/4), :]
 
-        x = np.arange(-int(self.N/4) * self.v_res, int(self.N/4) * self.v_res, self.v_res)
+        if self.detectionMode == "Threshold":
+            RDC_reshape = RDC[0:16, int(self.N/4):3*int(self.N/4), :]
+            x = np.arange(-int(self.N / 4) * self.v_res, int(self.N / 4) * self.v_res, self.v_res)
+            z = 20 * np.log10(np.abs(RDC_reshape[:, :, 0]))
+        else:
+            RDC_reshape = RDC[0:16, :, :]
+            x = np.arange(-int(self.N/2 - self.ncfar/2 - self.guard/2) * self.v_res, int(self.N/2 - self.ncfar/2 - self.guard/2) * self.v_res, self.v_res)
+            z = 20 * np.log10(np.abs(RDC_reshape[:, int(self.ncfar/2+self.guard/2):int(self.N-self.ncfar/2-self.guard/2), 0]))
+
         y = np.arange(0, 16 * self.d_res, self.d_res)
-        z = 20 * np.log10(np.abs(RDC_reshape[:, :, 0]))
 
-        detection_map, idx_list = self.detectionMap(z)
+        detection_map, idx_list = self.detectionMap(np.abs(RDC_reshape[:, :, 0]))
         h_r = np.zeros((len(idx_list), N_a), dtype=complex)
         est_nb_points = 0
+
+        if self.detectionMode == "Threshold":
+            dmap = detection_map
+        else:
+            dmap = detection_map[:, int(self.ncfar/2+self.guard/2):int(self.N-self.ncfar/2-self.guard/2)]
 
         AoA_list = []
         for i in range(len(idx_list)):
@@ -177,16 +198,44 @@ class Model:
             peaks, _ = find_peaks(AoA_list[i], height=self.thresh_angle)
             est_nb_points = est_nb_points + len(peaks)
 
-        return x, y, z, detection_map, AoA_list, est_nb_points
+        return x, y, z, dmap, AoA_list, est_nb_points
 
     def detectionMap(self, RDC):
         detection_map = np.zeros(RDC.shape)
         idx_list = []
-        for i in range(RDC.shape[0]):
-            idx, _ = find_peaks(RDC[i, :], height=self.thresh_detection)
-            for j in range(len(idx)):
-                detection_map[i, idx[j]] = 1
-                idx_list.append([i, idx[j]])
+        if self.detectionMode != "Threshold":
+            min_j = int(self.ncfar/2+self.guard/2)
+            max_j = int(self.N-self.ncfar/2-self.guard/2)
+            if self.detectionMode == "OS-CFAR":
+                for i in range(RDC.shape[0]):
+                    for j in range(min_j, max_j):
+                        x1 = RDC[i, int(j - min_j):int(j - self.guard / 2)]
+                        x2 = RDC[i, int(j + self.guard / 2 + 1):int(j + min_j + 1)]
+                        x = np.sort(np.concatenate((x1, x2), axis=None))
+                        Pn = x[self.kcfar]
+                        V_T = math.sqrt(2*Pn*math.log(1/10**self.pfa))
+                        if RDC[i, j] > V_T:
+                            detection_map[i, j] = 1
+                            idx_list.append([i, j])
+            else:
+                for i in range(RDC.shape[0]):
+                    for j in range(min_j, max_j):
+                        sum1 = np.sum(np.square(RDC[i, int(j - min_j):int(j - self.guard / 2)]))
+                        sum2 = np.sum(np.square(RDC[i, int(j + self.guard / 2 + 1):int(j + min_j + 1)]))
+                        Pn = (sum1 + sum2)/self.ncfar
+                        #Pn = np.sum(np.square(RDC[i, min_j:max_j]))/self.ncfar
+                        V_T = math.sqrt(2*Pn*math.log(1/10**self.pfa))
+                        if RDC[i, j] > V_T:
+                            detection_map[i, j] = 1
+                            idx_list.append([i, j])
+
+        else:
+            for i in range(RDC.shape[0]):
+                if self.detectionMode == "Threshold":
+                    idx, _ = find_peaks(RDC[i, :], height=10**(self.thresh_detection/20))
+                    for j in range(len(idx)):
+                        detection_map[i, idx[j]] = 1
+                        idx_list.append([i, idx[j]])
         return detection_map, idx_list
 
     def musicAoa(self, h_r):
