@@ -9,76 +9,55 @@ class RightPanel(tk.Frame):
 
         self.map_dim = [0, 0]
 
-        # Radar Frame
-        self.radar_frame = tk.LabelFrame(self, text="Radar")
-        self.radar_frame.configure(padx=5, pady=5)
-        self.radar_frame.pack(fill=tk.X)
-        TX_label = tk.Label(self.radar_frame, text="TX :")
-        TX_label.grid(row=0, column=0)
-        TX_x_label = tk.Label(self.radar_frame, text="x :\n[m]")
-        TX_x_label.grid(row=0, column=1)
-        self.TX_x_scale = tk.Scale(self.radar_frame, from_=0, to=0, orient=tk.HORIZONTAL, resolution=0.1)
-        self.TX_x_scale.grid(row=0, column=2)
-        TX_y_label = tk.Label(self.radar_frame, text="y :\n[m]")
-        TX_y_label.grid(row=1, column=1)
-        self.TX_y_scale = tk.Scale(self.radar_frame, from_=0, to=0, orient=tk.HORIZONTAL, resolution=0.1)
-        self.TX_y_scale.grid(row=1, column=2)
-        RX_label = tk.Label(self.radar_frame, text="RX :")
-        RX_label.grid(row=2, column=0)
-        RX_x_label = tk.Label(self.radar_frame, text="x :\n[m]")
-        RX_x_label.grid(row=2, column=1)
-        self.RX_x_scale = tk.Scale(self.radar_frame, from_=0, to=0, orient=tk.HORIZONTAL, resolution=0.1)
-        self.RX_x_scale.grid(row=2, column=2)
-        RX_y_label = tk.Label(self.radar_frame, text="y :\n[m]")
-        RX_y_label.grid(row=3, column=1)
-        self.RX_y_scale = tk.Scale(self.radar_frame, from_=0, to=0, orient=tk.HORIZONTAL, resolution=0.1)
-        self.RX_y_scale.grid(row=3, column=2)
-
         self.sim_frame = tk.LabelFrame(self, text="Simulation")
         self.sim_frame.configure(padx=5, pady=5)
         self.sim_frame.pack(fill=tk.X)
-        time_label = tk.Label(self.sim_frame, text="Duration :\n[s]")
-        time_label.grid(row=0, column=0)
+        tk.Label(self.sim_frame, text="Duration :\n[s]").grid(row=0, column=0)
         self.time_scale = tk.Scale(self.sim_frame, from_=1, to=20, orient=tk.HORIZONTAL, resolution=1)
         self.time_scale.grid(row=0, column=2)
         self.time_scale.set(10)
-        rdm_label = tk.Label(self.sim_frame, text="RDM Freq. :\n[Hz]")
-        rdm_label.grid(row=1, column=0)
+        tk.Label(self.sim_frame, text="RDM Freq. :\n[Hz]").grid(row=1, column=0)
         self.rdm_scale = tk.Scale(self.sim_frame, from_=1, to=4, orient=tk.HORIZONTAL, resolution=1)
         self.rdm_scale.grid(row=1, column=2)
         self.rdm_scale.set(2)
-        M_label = tk.Label(self.sim_frame, text="M :")
-        M_label.grid(row=2, column=0)
+        tk.Label(self.sim_frame, text="M :").grid(row=2, column=0)
         self.m_scale = tk.Scale(self.sim_frame, from_=16, to=128, orient=tk.HORIZONTAL, resolution=16)
         self.m_scale.grid(row=2, column=2)
         self.m_scale.set(64)
-        N_label = tk.Label(self.sim_frame, text="N :")
-        N_label.grid(row=3, column=0)
+        tk.Label(self.sim_frame, text="N :").grid(row=3, column=0)
         self.n_scale = tk.Scale(self.sim_frame, from_=16, to=128, orient=tk.HORIZONTAL, resolution=16)
         self.n_scale.grid(row=3, column=2)
         self.n_scale.set(64)
+        tk.Label(self.sim_frame, text="Detection\nThreshold :").grid(row=4, column=0)
+        self.detect_thresh = tk.Scale(self.sim_frame, orient=tk.HORIZONTAL, from_=-50, to=-150, resolution=10)
+        self.detect_thresh.grid(row=4, column=2)
+        self.detect_thresh.set(-90)
+        tk.Label(self.sim_frame, text="AoA\nThreshold :").grid(row=5, column=0)
+        self.aoa_thresh = tk.Scale(self.sim_frame, orient=tk.HORIZONTAL, from_=0, to=-10, resolution=1)
+        self.aoa_thresh.grid(row=5, column=2)
+        self.aoa_thresh.set(-6)
 
         self.progress_bar = Progressbar(self, orient=tk.HORIZONTAL, mode='determinate')
-        self.progress_bar.pack(fill=tk.BOTH)
+        self.progress_bar.pack(fill=tk.X)
         self.run_btn = tk.Button(self, text="Run Simulation")
         self.run_btn['state'] = 'disabled'
-        self.run_btn.pack(fill=tk.BOTH)
+        self.run_btn.pack(fill=tk.X)
+
+        self.analysis_frame = tk.LabelFrame(self, text="Analysis")
+        self.analysis_frame.configure(padx=5, pady=5)
+        self.analysis_frame.pack(fill=tk.BOTH)
+
+        tk.Label(self.analysis_frame, text="Iteration Nb :").grid(row=0, column=0)
+        self.run_scale = tk.Scale(self.analysis_frame, from_=10, to=100, orient=tk.HORIZONTAL, resolution=10)
+        self.run_scale.grid(row=0, column=1)
+        self.run_scale.set(50)
+
+        self.analysis_btn = tk.Button(self.analysis_frame, text="Run Analysis")
+        self.analysis_btn['state'] = 'disabled'
+        self.analysis_btn.grid(row=1, column=0, columnspan=2)
 
     def setMapDim(self, map_dim):
         self.map_dim = map_dim
-
-        self.TX_x_scale.configure(from_=0, to=map_dim[0])
-        self.TX_y_scale.configure(from_=0, to=map_dim[1])
-        self.RX_x_scale.configure(from_=0, to=map_dim[0])
-        self.RX_y_scale.configure(from_=0, to=map_dim[1])
-
-        self.TX_x_scale.set(map_dim[0]/2-0.5)
-        self.TX_y_scale.set(map_dim[1])
-        self.RX_x_scale.set(map_dim[0]/2+0.5)
-        self.RX_y_scale.set(map_dim[1])
-
-    def getRadarSettings(self):
-        return [self.TX_x_scale.get(), self.TX_y_scale.get(), self.RX_x_scale.get(), self.RX_y_scale.get()]
 
     def bar(self, value):
         self.progress_bar['value'] = round(100*value/self.time_scale.get())

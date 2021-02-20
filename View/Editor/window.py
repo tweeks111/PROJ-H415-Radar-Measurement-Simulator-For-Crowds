@@ -14,9 +14,9 @@ class Window(tk.Frame):
         self.canvas         = Canvas(self)
         self.right_panel    = RightPanel(self)
 
-    def addCluster(self, r, x, y, v, theta, color):
+    def addCluster(self, r, x, y, v, theta, color, is_checked):
         self.canvas.addCluster(r, x, y, v, theta, color)
-        self.left_panel.addCluster(color)
+        self.left_panel.addCluster(color, is_checked)
 
     def removeCluster(self, index):
         self.left_panel.removeCluster()
@@ -26,10 +26,12 @@ class Window(tk.Frame):
         self.canvas.selectCluster(index)
         self.left_panel.selectCluster(r, x, y, v, theta, lambda0)
 
-    def updateClusterSettings(self, r, x, y, v, theta, index):
+    def updateClusterSettings(self, r, x, y, v, theta, index, is_point):
         self.canvas.updateClusterSettings(r, x, y, v, theta, index)
+        #self.left_panel.updateClusterName(index, is_point)
 
-    def updateRadarSettings(self, tx_x, tx_y, rx_x, rx_y):
+    def updateRadarSettings(self, tx_x, tx_y, rx_x, rx_y, is_smaller):
+        self.left_panel.hide_warning(is_smaller)
         self.canvas.updateRadarSettings(tx_x, tx_y, rx_x, rx_y)
 
     def updateRadius(self, r):

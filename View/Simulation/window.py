@@ -1,6 +1,6 @@
 import tkinter as tk
 import View.Simulation
-
+from tkinter import ttk
 
 class Window(tk.Toplevel):
     def __init__(self, parent):
@@ -10,12 +10,16 @@ class Window(tk.Toplevel):
 
         self.map_dim = [0, 0]
 
-        self.left_frame     = tk.Frame(self)
-        self.left_frame.pack(side=tk.LEFT)
-        self.canvas         = View.Simulation.Canvas(self.left_frame)
+        self.left_frame = tk.Frame(self)
+        self.map_frame = tk.LabelFrame(self.left_frame, text="Clusters :")
+        self.map_frame.pack(side=tk.TOP, expand=False)
+        self.canvas         = View.Simulation.Canvas(self.map_frame)
         self.canvas.get_tk_widget().pack(side=tk.TOP)
+        self.info_panel = View.Simulation.InfoPanel(self.left_frame)
+        self.info_panel.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        self.left_frame.pack(side=tk.LEFT, fill=tk.BOTH)
 
-        self.config_frame   = tk.Frame(self.left_frame)
+        self.config_frame   = tk.Frame(self.map_frame)
         self.config_frame.pack(side=tk.BOTTOM)
         self.play_btn       = tk.Button(self.config_frame, text="\u23F8") #\u25B6
         self.play_btn.pack(side=tk.LEFT)
@@ -23,7 +27,10 @@ class Window(tk.Toplevel):
         self.time_scale     = tk.Scale(self.config_frame, from_=0, to=10, variable=self.time_value, orient=tk.HORIZONTAL, resolution=0.01, length=300)
         self.time_scale.pack(side=tk.LEFT, fill=tk.X)
 
-        self.right_frame    = tk.Frame(self)
+        separator = ttk.Separator(self, orient='vertical')
+        separator.pack(fill=tk.Y)
+
+        self.right_frame    = tk.LabelFrame(self, text="Plots :")
         self.right_frame.pack(side=tk.RIGHT)
         self.rdm_canvas     = View.Simulation.RDMCanvas(self.right_frame)
         self.rdm_canvas.get_tk_widget().pack(side=tk.LEFT)
@@ -48,9 +55,9 @@ class Window(tk.Toplevel):
         self.canvas.clearSimulation()
         self.rdm_canvas.clearRDM()
 
-    def plotRDM(self, z, dmap, AoA):
+    def plotRDM(self, z, dmap, AoA, est):
         self.rdm_canvas.updateRDM(z, dmap, AoA)
-
+        self.info_panel.setEstNbPoints(est)
     # -- Set Functions -- #
 
     def setMapDim(self, map_dim):
@@ -62,3 +69,9 @@ class Window(tk.Toplevel):
 
     def setScaleValue(self, value):
         self.time_value.set(value)
+
+    def setNbPoints(self, nb):
+        self.info_panel.setNbPoints(nb)
+
+    def setEstNbpoints(self, est):
+        self.info_panel.setEstNbPoints(est)

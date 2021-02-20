@@ -30,8 +30,8 @@ class View(tk.Tk):
     def updateSimulation(self, pos_list):
         self.simulation_window.updateSimulation(pos_list)
 
-    def addCluster(self, r, x, y, v, theta, color):
-        self.editor_window.addCluster(r, x, y, v, theta, color)
+    def addCluster(self, r, x, y, v, theta, color, is_checked):
+        self.editor_window.addCluster(r, x, y, v, theta, color, is_checked)
 
     def removeCluster(self, index):
         self.editor_window.removeCluster(index)
@@ -39,11 +39,11 @@ class View(tk.Tk):
     def selectCluster(self, index, r, x, y, v, theta, lambda0):
         self.editor_window.selectCluster(index, r, x, y, v, theta, lambda0)
 
-    def updateClusterSettings(self, r, x, y, v, theta, index):
-        self.editor_window.updateClusterSettings(r, x, y, v, theta, index)
+    def updateClusterSettings(self, r, x, y, v, theta, index, is_point):
+        self.editor_window.updateClusterSettings(r, x, y, v, theta, index, is_point)
 
-    def updateRadarSettings(self, tx_x, tx_y, rx_x, rx_y):
-        self.editor_window.updateRadarSettings(tx_x, tx_y, rx_x, rx_y)
+    def updateRadarSettings(self, tx_x, tx_y, rx_x, rx_y, is_smaller):
+        self.editor_window.updateRadarSettings(tx_x, tx_y, rx_x, rx_y, is_smaller)
 
     def updateRadius(self, r):
         self.editor_window.updateRadius(r)
@@ -65,8 +65,11 @@ class View(tk.Tk):
     def initRadar(self, tx_x, tx_y, rx_x, rx_y):
         self.editor_window.initRadar(tx_x, tx_y, rx_x, rx_y)
 
-    def updateRDM(self, z, detection_map, AoA_list):
-        self.simulation_window.plotRDM(z, detection_map, AoA_list)
+    def updateRDM(self, z, detection_map, AoA_list, est_list):
+        self.simulation_window.plotRDM(z, detection_map, AoA_list, est_list)
+
+    def setTotalEst(self, totalEst):
+        self.simulation_window.info_panel.totalEst.set(totalEst)
 
     def clearSimulation(self):
         self.simulation_window.clearSimulation()

@@ -2,7 +2,8 @@ import math
 
 
 class Cluster:
-    def __init__(self, r, x, y, v, theta, lambda0, color):
+    def __init__(self, r, x, y, v, theta, lambda0, color, is_point):
+        self.is_point = is_point
         self.r = r
         self.x = x
         self.y = y
@@ -20,6 +21,9 @@ class Cluster:
         self.theta = theta * math.pi/180
         self.area = self.computeArea()
         self.lambda0 = lambda0
+
+    def setIsPoint(self, is_point):
+        self.is_point = is_point
 
     def computeArea(self):
         return math.pi * self.r ** 2

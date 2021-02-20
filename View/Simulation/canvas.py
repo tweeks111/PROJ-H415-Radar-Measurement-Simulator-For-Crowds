@@ -5,11 +5,11 @@ import matplotlib.pyplot as plt
 
 class Canvas(FigureCanvasTkAgg):
     def __init__(self, parent):
-        self.fig = plt.figure()
+        self.fig = plt.figure(figsize=(3, 3))
         self.ax = plt.axes()
         self.fig.set_facecolor("#f0f0f0")
         self.ax.set_aspect('equal', adjustable='box')
-        plt.gca().invert_yaxis()
+        #plt.gca().invert_yaxis()
         FigureCanvasTkAgg.__init__(self, self.fig, master=parent)
 
         self.TX = None

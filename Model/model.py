@@ -13,7 +13,6 @@ BW = 80e6  # Bandwidth
 Q = 1024  # Number of OFDM carriers
 L = 64  # Number of taps in the channel, corresponding to a duration of L*Delta_tau
 N_a = 4  # Number of antennas at the receiver
-d_ant = 0.06  # Distance between each antenna
 kappa = 0  # Number of unknown data OFDM
 Delta_t = 16e-6
 
@@ -27,10 +26,10 @@ N0 = 10 ** (N0_dBm / 10 - 3)  # PSD of noise [W/Hz]
 P_noise = N0 * BW
 
 lambda_c = C / f_c  # Wavelength
+d_ant = lambda_c/2  # Distance between each antenna
 Ts = 1 / BW  # Sampling time   (Delta_tau) -> fast time interval  (index i)
 T = (kappa + 1) * (Q + L) * Ts  # Time between the reception of two symbols  (Delta_t) -> slow time interval (index k)
 
-threshold = -90
 """
 i in range(Q) -> fast time index, there is Q samples for the signal as theres is Q Symbols  -> i*Ts
 k in range(N.M) -> slow time index, 
@@ -43,7 +42,7 @@ bin_i = np.arange(-Ts/2, (Q+1/2) * Ts, Ts)
 def poissonPointProcess(cluster):
     lambda0 = cluster.getLambda0()
     nb_points = scipy.stats.poisson(lambda0 * cluster.getArea()).rvs()
-    r = cluster.getRadius() * np.random.uniform(0, 1, nb_points)
+    r = cluster.getRadius() * np.sqrt(np.random.uniform(0.0, 1.0, nb_points))
     theta = 2 * pi * np.random.uniform(0, 1, nb_points)
     x0 = [math.cos(i) for i in theta]
     y0 = [math.sin(i) for i in theta]
@@ -68,6 +67,8 @@ class Model:
 
         self.M              = 64  # Number of OFDM symbols used for averaging in channel estimation
         self.N              = 64  # Number of channel estimations to obtain one RDM
+        self.thresh_detection = -90
+        self.thresh_angle = -6
 
         self.d_res          = 0
         self.f_res          = 0
@@ -78,23 +79,24 @@ class Model:
         self.d_smaller_d_res = False
     # -- Points Function --
 
-    def initSimulation(self, N, M):
+    def initSimulation(self, N, M, thresh_detection, thresh_angle):
         self.points.clear()
-        self.computeResolutionParameters(N, M)
+        self.N = N
+        self.M = M
+        self.computeResolutionParameters()
+        self.thresh_detection = thresh_detection
+        self.thresh_angle = thresh_angle
 
         for cluster in self.clusters_list:
-            temp_pos_list = poissonPointProcess(cluster)
+            if cluster.is_point == 0:
+                temp_pos_list = poissonPointProcess(cluster)
+            else:
+                temp_pos_list = np.array([[cluster.getX()], [cluster.getY()]])
             v = cluster.getSpeed()
             theta = cluster.getAngle()
             color = cluster.getColor()
             for i in range(0, temp_pos_list.shape[1]):
                 self.points.append(Person(temp_pos_list[0, i], temp_pos_list[1, i], v, theta, lambda_c, color))
-
-        self.d = math.sqrt((self.tx_pos[0] - self.rx_pos[0]) ** 2 + (self.tx_pos[1] - self.rx_pos[1]) ** 2)
-        if self.d < self.d_res:
-            self.d_smaller_d_res = True
-        else :
-            self.d_smaller_d_res = False
 
     def updatePointsPosition(self, time):
         pos_list = []
@@ -111,13 +113,11 @@ class Model:
 
     # -- RDM Computation --
 
-    def computeResolutionParameters(self, N, M):
-        self.N = N
-        self.M = M
+    def computeResolutionParameters(self):
         self.d_res = C / (2 * BW)
-        self.f_res = 1 / (N * M * Delta_t)
-        self.v_res = lambda_c / (2 * N * M * Delta_t)
-        self.T_dwell = N * M * Delta_t
+        self.f_res = 1 / (self.N * self.M * Delta_t)
+        self.v_res = lambda_c / (2 * self.N * self.M * Delta_t)
+        self.T_dwell = self.N * self.M * Delta_t
         self.alpha_res = 3
 
     def computeRDM(self):
@@ -167,21 +167,23 @@ class Model:
 
         detection_map, idx_list = self.detectionMap(z)
         h_r = np.zeros((len(idx_list), N_a), dtype=complex)
+        est_nb_points = 0
 
         AoA_list = []
         for i in range(len(idx_list)):
             for j in range(N_a):
                 h_r[i, j] = RDC_reshape[idx_list[i][0], idx_list[i][1], j]
             AoA_list.append(10 * np.log10(np.abs(self.musicAoa(np.array(h_r[i, :])[np.newaxis]))))
-            #AoA_list.append(10 * np.log10(np.abs(self.musicAoa(h_r[i, :]))))
+            peaks, _ = find_peaks(AoA_list[i], height=self.thresh_angle)
+            est_nb_points = est_nb_points + len(peaks)
 
-        return x, y, z, detection_map, AoA_list
+        return x, y, z, detection_map, AoA_list, est_nb_points
 
     def detectionMap(self, RDC):
         detection_map = np.zeros(RDC.shape)
         idx_list = []
         for i in range(RDC.shape[0]):
-            idx, _ = find_peaks(RDC[i, :], height=threshold)
+            idx, _ = find_peaks(RDC[i, :], height=self.thresh_detection)
             for j in range(len(idx)):
                 detection_map[i, idx[j]] = 1
                 idx_list.append([i, idx[j]])
@@ -211,17 +213,18 @@ class Model:
         music_spectrum = music_spectrum / np.max(abs(music_spectrum))
         return music_spectrum
 
-
     # -- Cluster Functions --
-
-    def addCluster(self, r, x, y, v, theta, lambda0, color):
-        self.clusters_list.append(Cluster(r, x, y, v, theta, lambda0, color))
+    def addCluster(self, r, x, y, v, theta, lambda0, color, is_point):
+        self.clusters_list.append(Cluster(r, x, y, v, theta, lambda0, color, is_point))
 
     def removeCluster(self, index):
         del self.clusters_list[index]
 
     def updateClusterSettings(self, r, x, y, v, theta, lambda0, index):
         self.clusters_list[index].updateClusterSettings(r, x, y, v, theta, lambda0)
+
+    def setIsPoint(self, is_point, index):
+        self.clusters_list[index].setIsPoint(is_point)
 
     # -- Set Functions --
 
@@ -251,3 +254,11 @@ class Model:
 
     def getRadarPosition(self):
         return self.tx_pos, self.rx_pos
+
+    def getRadarIsSmaller(self):
+        self.d = math.sqrt((self.tx_pos[0] - self.rx_pos[0]) ** 2 + (self.tx_pos[1] - self.rx_pos[1]) ** 2)
+        if self.d < self.d_res:
+            self.d_smaller_d_res = True
+        else:
+            self.d_smaller_d_res = False
+        return self.d_smaller_d_res

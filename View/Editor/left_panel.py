@@ -33,43 +33,82 @@ class LeftPanel(tk.Frame):
         self.clusters_config.configure(padx=5, pady=5)
         self.clusters_config.pack(fill=tk.X)
 
-        radius_label = tk.Label(self.clusters_config, text="Radius :\n[m]")
-        radius_label.grid(row=0, column=0)
+        tk.Label(self.clusters_config, text="Radius :\n[m]").grid(row=0, column=0)
         self.radius_scale = tk.Scale(self.clusters_config, from_=MIN_RADIUS, to=MAX_RADIUS, orient=tk.HORIZONTAL, resolution=0.1, var=self.radius)
         self.radius_scale.grid(row=0, column=1)
-        x_label = tk.Label(self.clusters_config, text="x :\n[m]")
-        x_label.grid(row=1, column=0)
+        tk.Label(self.clusters_config, text="x :\n[m]").grid(row=1, column=0)
         self.x_scale = tk.Scale(self.clusters_config, from_=0, to=0, orient=tk.HORIZONTAL, resolution=0.1)
         self.x_scale.grid(row=1, column=1)
-        y_label = tk.Label(self.clusters_config, text="y :\n[m]")
-        y_label.grid(row=2, column=0)
+        tk.Label(self.clusters_config, text="y :\n[m]").grid(row=2, column=0)
         self.y_scale = tk.Scale(self.clusters_config, from_=0, to=0, orient=tk.HORIZONTAL, resolution=0.1)
         self.y_scale.grid(row=2, column=1)
-        v_label = tk.Label(self.clusters_config, text="v :\n[km/h]")
-        v_label.grid(row=3, column=0)
+        tk.Label(self.clusters_config, text="v :\n[km/h]").grid(row=3, column=0)
         self.v_scale = tk.Scale(self.clusters_config, from_=MIN_SPEED, to=MAX_SPEED, resolution=0.5, orient=tk.HORIZONTAL)
         self.v_scale.grid(row=3, column=1)
-        angle_label = tk.Label(self.clusters_config, text="\u03B1 :\n[°]")
-        angle_label.grid(row=4, column=0)
+        tk.Label(self.clusters_config, text="Angle :\n[°]").grid(row=4, column=0)
         self.angle_scale = tk.Scale(self.clusters_config, from_=0, to=360, resolution=15, orient=tk.HORIZONTAL)
         self.angle_scale.grid(row=4, column=1)
-        lambda_label = tk.Label(self.clusters_config, text="\u03BB :")
-        lambda_label.grid(row=5, column=0)
+        tk.Label(self.clusters_config, text="\u03BB :").grid(row=5, column=0)
         self.lambda_scale = tk.Scale(self.clusters_config, from_=0, to=1, resolution=0.1, orient=tk.HORIZONTAL)
         self.lambda_scale.set(0.5)
         self.lambda_scale.grid(row=5, column=1)
+        self.btnVar = tk.IntVar()
+        self.btnVar.set(0)
+        self.point_btn = tk.Checkbutton(self.clusters_config, text="One point only", variable=self.btnVar, onvalue=1, offvalue=0)
+        self.point_btn.grid(row=6, column=0, columnspan=2)
+
+        # Radar Frame
+        self.radar_frame = tk.LabelFrame(self, text="Radar")
+        self.radar_frame.configure(padx=5, pady=5)
+        self.radar_frame.pack(fill=tk.X)
+        tk.Label(self.radar_frame, text="TX :").grid(row=0, column=0)
+        tk.Label(self.radar_frame, text="x :\n[m]").grid(row=0, column=1)
+        self.TX_x_scale = tk.Scale(self.radar_frame, from_=0, to=0, orient=tk.HORIZONTAL, resolution=0.1)
+        self.TX_x_scale.grid(row=0, column=2)
+        tk.Label(self.radar_frame, text="y :\n[m]").grid(row=1, column=1)
+        self.TX_y_scale = tk.Scale(self.radar_frame, from_=0, to=0, orient=tk.HORIZONTAL, resolution=0.1)
+        self.TX_y_scale.grid(row=1, column=2)
+        tk.Label(self.radar_frame, text="RX :").grid(row=2, column=0)
+        tk.Label(self.radar_frame, text="x :\n[m]").grid(row=2, column=1)
+        self.RX_x_scale = tk.Scale(self.radar_frame, from_=0, to=0, orient=tk.HORIZONTAL, resolution=0.1)
+        self.RX_x_scale.grid(row=2, column=2)
+        tk.Label(self.radar_frame, text="y :\n[m]").grid(row=3, column=1)
+        self.RX_y_scale = tk.Scale(self.radar_frame, from_=0, to=0, orient=tk.HORIZONTAL, resolution=0.1)
+        self.RX_y_scale.grid(row=3, column=2)
+
+        self.warning_label = tk.Label(self.radar_frame, text="\u26A0 Distance between TX and\n RX is bigger than resolution", fg="red")
+        self.warning_label.grid(row=4, column=0, columnspan=3)
+        self.warning_label.grid_remove()
 
     def updateRadius(self, r):
         self.x_scale.configure(from_=float(r), to=self.map_dim[0]-float(r))
         self.y_scale.configure(from_=float(r), to=self.map_dim[1]-float(r))
 
-    def addCluster(self, color):
-        self.clusters_listbox.insert('end', "Cluster "+str(self.clusters_listbox.size()+1))
+    def addCluster(self, color, is_point):
+        if is_point == 1:
+            self.clusters_listbox.insert('end', "Point " + str(self.clusters_listbox.size() + 1))
+        else:
+            self.clusters_listbox.insert('end', "Cluster " + str(self.clusters_listbox.size() + 1))
         self.clusters_listbox.itemconfig('end', {'bg':color})
         self.clusters_listbox.select_clear(0, 'end')
         self.clusters_listbox.select_set('end')
         self.clusters_listbox.event_generate("<<ListboxSelect>>")
         self.remove_cluster_btn['state'] = 'normal'
+
+    #def updateClusterName(self, index, is_point):
+
+        #color = self.clusters_listbox.itemcget(index, 'bg')
+        #self.clusters_listbox.delete(index)
+        #if is_point == 1:
+        #    self.clusters_listbox.insert(index,  "Point " + str(self.clusters_listbox.size() + 1))
+        #else:
+        #    self.clusters_listbox.insert(index, "Cluster " + str(self.clusters_listbox.size() + 1))
+        #self.clusters_listbox.itemconfig(index, {'bg': color})
+        #self.clusters_listbox.event_generate("<<ListboxSelect>>")
+
+    def getRadarSettings(self):
+        return [self.TX_x_scale.get(), self.TX_y_scale.get(), self.RX_x_scale.get(), self.RX_y_scale.get()]
+
 
     def removeCluster(self):
         selected_index = self.clusters_listbox.curselection()
@@ -87,6 +126,17 @@ class LeftPanel(tk.Frame):
 
     def setMapDim(self, map_dim):
         self.map_dim = map_dim
+
+        self.TX_x_scale.configure(from_=0, to=map_dim[0])
+        self.TX_y_scale.configure(from_=0, to=map_dim[1])
+        self.RX_x_scale.configure(from_=0, to=map_dim[0])
+        self.RX_y_scale.configure(from_=0, to=map_dim[1])
+
+        self.TX_x_scale.set(map_dim[0]/2-0.5)
+        self.TX_y_scale.set(map_dim[1])
+        self.RX_x_scale.set(map_dim[0]/2+0.5)
+        self.RX_y_scale.set(map_dim[1])
+
         self.x_scale.configure(from_=self.radius.get(), to=map_dim[0]-self.radius.get())
         self.y_scale.configure(from_=self.radius.get(), to=map_dim[0]-self.radius.get())
         self.radius_scale.set((MAX_RADIUS - MIN_RADIUS) / 2 + MIN_RADIUS)
@@ -105,3 +155,8 @@ class LeftPanel(tk.Frame):
         self.angle_scale.set(theta)
         self.lambda_scale.set(lambda0)
 
+    def hide_warning(self, is_smaller):
+        if is_smaller:
+            self.warning_label.grid_remove()
+        else:
+            self.warning_label.grid()
