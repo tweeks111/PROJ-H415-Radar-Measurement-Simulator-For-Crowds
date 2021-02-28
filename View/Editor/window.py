@@ -18,9 +18,15 @@ class Window(tk.Frame):
         self.canvas.addCluster(r, x, y, v, theta, color)
         self.left_panel.addCluster(color, is_checked)
 
+    def addParam(self, param):
+        self.right_panel.addParam(param)
+
     def removeCluster(self, index):
         self.left_panel.removeCluster()
         self.canvas.removeCluster(index)
+
+    def removeParam(self, index):
+        self.right_panel.removeParam(index)
 
     def selectCluster(self, index, r, x, y, v, theta, lambda0):
         self.canvas.selectCluster(index)

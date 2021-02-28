@@ -1,8 +1,8 @@
 """Constants"""
 
 # Canvas
-CANVAS_WIDTH = 800
-CANVAS_HEIGHT = 800
+CANVAS_WIDTH = 600
+CANVAS_HEIGHT = 600
 PERSON_DIAMETER = 0.5
 
 # Person Speed

@@ -16,10 +16,11 @@ class LeftPanel(tk.Frame):
         self.cluster_frame.configure(padx=5, pady=5)
         self.cluster_frame.pack()
         yScroll = tk.Scrollbar(self.cluster_frame, orient=tk.VERTICAL)
-        self.clusters_listbox = tk.Listbox(self.cluster_frame, yscrollcommand=yScroll.set, activestyle='none', selectbackground="red", exportselection=False)
+
+        self.clusters_listbox = tk.Listbox(self.cluster_frame, yscrollcommand=yScroll.set, activestyle='none', selectbackground="red", exportselection=False, height=5)
         self.clusters_listbox.grid(row=1, column=0, sticky='nsew')
         yScroll.grid(row=1, column=1, sticky='ns')
-        yScroll['command'] = self.clusters_listbox.yview()
+        yScroll.config(command=self.clusters_listbox.yview)
         self.clusters_colors = []
         #   Buttons
         self.remove_cluster_btn = tk.Button(self.cluster_frame, text="Remove")
@@ -94,6 +95,7 @@ class LeftPanel(tk.Frame):
         self.clusters_listbox.select_set('end')
         self.clusters_listbox.event_generate("<<ListboxSelect>>")
         self.remove_cluster_btn['state'] = 'normal'
+
 
     #def updateClusterName(self, index, is_point):
 

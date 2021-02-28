@@ -1,5 +1,6 @@
 import View.Editor as Editor
 import View.Simulation as Sim
+import View.Analysis as Analysis
 
 import tkinter as tk
 from tkinter import messagebox
@@ -13,17 +14,20 @@ class View(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.protocol("WM_DELETE_WINDOW", self.on_close)
+        self.iconbitmap('icon.ico')
 
-        self.title("Size configuration")
+        self.title("RRS Map Size")
         self.resizable(False, False)
 
         self.map_dim = [0, 0]
 
         self.size_dialog        = Editor.SizeDialog(self)
-        self.size_dialog.pack()
+        self.size_dialog.pack(padx=10, pady=5)
         self.editor_window      = Editor.Window(self)
         self.simulation_window  = Sim.Window(self)
+        self.analysis_window    = Analysis.Window(self)
         self.simulation_window.withdraw()
+        self.analysis_window.withdraw()
 
         self.centerWindow()
 
@@ -33,8 +37,14 @@ class View(tk.Tk):
     def addCluster(self, r, x, y, v, theta, color, is_checked):
         self.editor_window.addCluster(r, x, y, v, theta, color, is_checked)
 
+    def addParam(self, param):
+        self.editor_window.addParam(param)
+
     def removeCluster(self, index):
         self.editor_window.removeCluster(index)
+
+    def removeParam(self, index):
+        self.editor_window.removeParam(index)
 
     def selectCluster(self, index, r, x, y, v, theta, lambda0):
         self.editor_window.selectCluster(index, r, x, y, v, theta, lambda0)
