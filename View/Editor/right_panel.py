@@ -131,7 +131,7 @@ class RightPanel(tk.Frame):
 
     def addParam(self, param):
 
-        if param[2] == "Threshold":
+        if param[2] == "Peak Detection":
             self.param_listbox.insert('end', str(param[2]) + " "+   # Detection
                                       str(param[0]) + "|" +         # N
                                       str(param[1]) + "|" +         # M

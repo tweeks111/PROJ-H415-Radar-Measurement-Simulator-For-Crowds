@@ -1,5 +1,5 @@
 import math
-
+import numpy as np
 # Static Methods
 
 
@@ -66,18 +66,18 @@ class Person:
         d_rx = lineLength(RX_point_line)
 
         vect_TX_point = (TX_point_line[1][0]-TX_point_line[0][0], TX_point_line[1][1]-TX_point_line[0][1])
-        vect_RX_point = (RX_point_line[1][0]-RX_point_line[0][0], RX_point_line[1][1]-RX_point_line[0][1])
+        vect_RX_point = (RX_point_line[1][0]-RX_point_line[0][0],  RX_point_line[1][1]-RX_point_line[0][1])
         xi = vectAngle(vect_TX_point, vect_RX_point)
 
         bisVect = bisectionVector(vect_TX_point, vect_RX_point)
         theta = vectAngle(bisVect, self.v)
-
+        # TODO : maybe change the vectAngle function and use arctan2 instead
         #print(math.cos(theta)*math.cos(xi/2))   # percentage of f_doppler taken into account
 
         doppler_freq = 2*self.speed*math.cos(theta)*math.cos(xi/2)/self.wavelength
 
-        DoA = vectAngle(vect_RX_point, [0, 1])
-
+        #DoA = vectAngle(vect_RX_point, [0, 1])
+        DoA = np.arctan2(rx_pos[0]-self.x, rx_pos[1]-self.y)
         return d_tx, d_rx, DoA, doppler_freq
 
     # Get Functions

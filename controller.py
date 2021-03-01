@@ -234,7 +234,7 @@ class Controller:
         detect_type = self.view.editor_window.right_panel.combo_detect.get()
         tmp.extend([N, M, detect_type])
 
-        if detect_type == "Threshold":
+        if detect_type == "Peak Detection":
             tmp.append(int(self.view.editor_window.right_panel.detect_thresh.get()))#Threshold
         elif detect_type == "OS-CFAR":
             tmp.append(int(self.view.editor_window.right_panel.proba_scale.get()))  #Pfa
@@ -301,7 +301,7 @@ class Controller:
 
             detectionMode = self.view.editor_window.right_panel.combo_detect.get()
             detection_list = [N, M, detectionMode]
-            if detectionMode == "Threshold":
+            if detectionMode == "Peak Detection":
                 detect_thresh = self.view.editor_window.right_panel.detect_thresh.get()
                 detection_list.append(detect_thresh)
             else:

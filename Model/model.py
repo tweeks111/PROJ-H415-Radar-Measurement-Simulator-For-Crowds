@@ -6,7 +6,12 @@ from scipy.signal import find_peaks
 from cmath import *
 import math
 from constants import *
-import matplotlib.pyplot as plt
+import tkinter as tk
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
+
 
 f_c = 5e9  # Carrier frequency
 BW = 80e6  # Bandwidth
@@ -100,7 +105,7 @@ class Model:
         detection_mode = detection_list[2]
         thresh_angle = detection_list[-1]
 
-        if detection_mode == "Threshold":
+        if detection_mode == "Peak Detection":
             RDAC_reshape = RDAC[0:16, int(N / 4):3 * int(N / 4), :]
         else:
             ncfar = detection_list[4]
@@ -118,7 +123,7 @@ class Model:
         guard = 0
         detection_mode = detection_list[2]
         thresh_angle = detection_list[-1]
-        if detection_mode == "Threshold":
+        if detection_mode == "Peak Detection":
             RDAC_reshape = RDAC[0:16, int(N / 4):3 * int(N / 4), :]
             x = np.arange(-int(N / 4) * self.v_res, int(N / 4) * self.v_res, self.v_res)
             z = 20 * np.log10(np.abs(RDAC_reshape[:, :, 0]))
@@ -136,7 +141,7 @@ class Model:
 
         AoA_list, est_nb_points = computeAllAoA(RDAC_reshape, idx_list, thresh_angle)
 
-        if detection_mode == "Threshold":
+        if detection_mode == "Peak Detection":
             dmap = detection_map
         else:
             dmap = detection_map[:, int(ncfar / 2 + guard / 2):int(N - ncfar / 2 - guard / 2)]
@@ -171,6 +176,10 @@ class Model:
                                  * exp(-1j * 2 * pi * f_c * tau_n[point]) \
                                  * exp(1j * 2 * pi * k * f_d[point] * T) \
                                  * exp(1j * 2 * pi * l * (d_ant / lambda_c) * sin(DoA[point]))
+
+        for point in range(len(self.points)):
+            i = idx[point]
+
 
         n1 = np.random.normal(0, 1, (Q, M * N, N_a)) * sqrt(P_noise / 2)
         n2 = np.random.normal(0, 1, (Q, M * N, N_a)) * sqrt(P_noise / 2)
@@ -254,8 +263,7 @@ class Model:
 
 def musicAoa(h_r):
     h_r = np.transpose(h_r)
-
-    R = np.dot(h_r, np.transpose(h_r))
+    R = np.dot(h_r, np.transpose(h_r.conj()))
     [D, V] = np.linalg.eig(R)  # eigenvalue decomposition of R. V = eigenvectors, D = eigenvalues
     I = np.argsort(-np.abs(D))
     D = -np.sort(-np.abs(D))
@@ -263,7 +271,7 @@ def musicAoa(h_r):
     V = V[:, I]
     Us = V[:, 0]
     Un = V[:, 1:]
-    G = np.dot(Un, np.transpose(Un))
+    G = np.dot(Un, np.transpose(Un.conj()))
     angles = np.arange(-90, 90.05, 0.05)
     # Check multiplication of vector
     s = np.sin(angles * pi / 180)
@@ -271,18 +279,17 @@ def musicAoa(h_r):
 
     music_spectrum = np.zeros(angles.size, dtype=complex)
     for k in range(angles.size):
-        music_spectrum[k] = 1 / np.dot(np.dot(v[:, k], G), v[:, k])
+        music_spectrum[k] = 1 / np.dot(np.dot(v[:, k].conj(), G), v[:, k])
 
     music_spectrum = music_spectrum / np.max(abs(music_spectrum))
     return music_spectrum
-
 
 def poissonPointProcess(cluster):
     lambda0 = cluster.getLambda0()
     nb_points = 0
     while nb_points == 0:
         nb_points = scipy.stats.poisson(lambda0 * cluster.getArea()).rvs()
-    r = cluster.getRadius() * np.sqrt(np.random.uniform(0.0, 1.0, nb_points))
+    r = cluster.getRadius() * np.random.uniform(0.0, 1.0, nb_points)
     theta = 2 * pi * np.random.uniform(0, 1, nb_points)
     x0 = [math.cos(i) for i in theta]
     y0 = [math.sin(i) for i in theta]
@@ -298,7 +305,7 @@ def detectionMap(RDAC, detection_list, N):
     detection_map = np.zeros(RDAC.shape)
     idx_list = []
     detection_mode = detection_list[2]
-    if detection_mode != "Threshold":
+    if detection_mode != "Peak Detection":
         pfa = detection_list[3]
         ncfar = detection_list[4]
         guard = detection_list[5]
@@ -311,7 +318,7 @@ def detectionMap(RDAC, detection_list, N):
                     x1 = RDAC[i, int(j - min_j):int(j - guard / 2)]
                     x2 = RDAC[i, int(j + guard / 2 + 1):int(j + min_j + 1)]
                     x = np.sort(np.concatenate((x1, x2), axis=None))
-                    Pn = x[kcfar]
+                    Pn = x[kcfar]**2
                     V_T = math.sqrt(2 * Pn * math.log(1 / 10 ** pfa))
                     if RDAC[i, j] > V_T:
                         detection_map[i, j] = 1
@@ -322,9 +329,10 @@ def detectionMap(RDAC, detection_list, N):
                     sum1 = np.sum(np.square(RDAC[i, int(j - min_j):int(j - guard / 2)]))
                     sum2 = np.sum(np.square(RDAC[i, int(j + guard / 2 + 1):int(j + min_j + 1)]))
                     Pn = (sum1 + sum2) / ncfar
-                    # Pn = np.sum(np.square(RDC[i, min_j:max_j]))/ncfar
-                    V_T = math.sqrt(2 * Pn * math.log(1 / 10 ** pfa))
-                    if RDAC[i, j] > V_T:
+                    alpha = N*((10 ** pfa)**(-1/ncfar)-1)
+                    T = alpha * Pn
+                    #V_T = math.sqrt(2 * Pn * math.log(1 / 10 ** pfa))
+                    if RDAC[i, j] > sqrt(T):
                         detection_map[i, j] = 1
                         idx_list.append([i, j])
 

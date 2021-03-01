@@ -46,7 +46,7 @@ class Window(tk.Toplevel):
         yScroll_3.grid(row=0, column=2, sticky='ns')
 
         self.combo_thresh = tk.ttk.Combobox(self.thresh_label_frame, state="readonly")
-        self.combo_thresh['values'] = ('RDM Threshold', 'AoA Threshold')
+        self.combo_thresh['values'] = ('Peak Detection', 'AoA Threshold')
         self.combo_thresh.current(0)
         self.combo_thresh_param = tk.ttk.Combobox(self.thresh_label_frame, state="readonly")
         self.combo_thresh_param['values'] = ('', 'N, M', 'AoA Threshold')
@@ -79,7 +79,7 @@ class Window(tk.Toplevel):
         count = [0, 0, 0]
         for i in range(len(index_param)):
             for j in range(len(index_param[i])):
-                if index_param[i][j][2] == "Threshold":
+                if index_param[i][j][2] == "Peak Detection":
                     self.thresh_tree.insert(parent='', index='end', values=(index_param[i][j][0], index_param[i][j][1], index_param[i][j][3], index_param[i][j][4], est[i+j]))
                     count[0] = count[0] + 1
                 elif index_param[i][j][2] == "OS-CFAR":
@@ -173,9 +173,9 @@ class Window(tk.Toplevel):
         a.set_ylabel('Detection Ratio')
         data = self.getAllData(self.thresh_tree)
 
-        if plot_type == "RDM Threshold":
+        if plot_type == "Peak Detection":
             plot_window.title("Detect. Ratio - RDM Threshold [dB]")
-            a.set_xlabel('RDM Threshold')
+            a.set_xlabel('Peak Detection')
             if param_type == '':
                 thresh = self.getColumn(self.thresh_tree, 2)
                 est = self.getColumn(self.thresh_tree, 4)
@@ -246,7 +246,7 @@ class Window(tk.Toplevel):
                     est = est[sort_idx]
                     a.plot(AoA, est, label="N = " + N + " M = " + M)
                 a.legend(loc="upper right")
-            elif param_type == "RDM Threshold":
+            elif param_type == "Peak Detection":
                 list_of_thresh = np.arange(-150, -40, 10)
                 group_list = []
                 for thresh in list_of_thresh:
@@ -288,8 +288,8 @@ class Window(tk.Toplevel):
         return data
 
     def changeThreshGroup(self, event):
-        if self.combo_thresh.get() == "RDM Threshold":
+        if self.combo_thresh.get() == "Peak Detection":
             self.combo_thresh_param['values'] = ('', 'N, M', 'AoA Threshold')
         elif self.combo_thresh.get() == "AoA Threshold":
-            self.combo_thresh_param['values'] = ('', 'N, M', 'RDM Threshold')
+            self.combo_thresh_param['values'] = ('', 'N, M', 'Peak Detection')
         self.combo_thresh_param.current(0)
